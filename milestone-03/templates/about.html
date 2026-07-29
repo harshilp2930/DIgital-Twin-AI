@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5 animate-fade-in">
+    <!-- Hero Header -->
+    <div class="text-center mb-5 hero-wrap p-5 rounded-4 shadow-sm text-white position-relative overflow-hidden">
+        <div class="hero-bg-overlay"></div>
+        <div class="position-relative z-1">
+            <span class="badge bg-light text-primary mb-3 px-3 py-2 text-uppercase fw-bold tracking-wider">Our Vision</span>
+            <h1 class="display-4 fw-bold mb-3">Optimize Your Life with Digital Twin AI</h1>
+            <p class="lead mx-auto text-white-50" style="max-width: 700px;">
+                We build interactive, predictive digital replicas of your habits, finances, and achievements to guide you toward a better tomorrow.
+            </p>
+        </div>
+    </div>
+
+    <!-- The Concept -->
+    <div class="row align-items-center mb-5 g-4">
+        <div class="col-lg-6">
+            <h2 class="fw-bold mb-3">What is a <span class="text-gradient">Digital Twin</span>?</h2>
+            <p class="text-muted fs-5">
+                Originally used in engineering to run simulations on physical assets, a <strong>Digital Twin</strong> is a virtual model designed to accurately reflect a physical object. 
+            </p>
+            <p class="text-muted">
+                At <strong>Digital Twin AI</strong>, we apply this futuristic concept to <em>you</em>. By tracking your daily habits, financial transactions, study hours, and physical activities, our platform builds a dynamic virtual replica of your life. 
+            </p>
+            <p class="text-muted">
+                Through advanced predictive models and scenario simulations, your Digital Twin helps you understand the future consequences of your present choices, allowing you to optimize your health, wealth, and mind.
+            </p>
+        </div>
+        <div class="col-lg-6 text-center">
+            <div class="image-showcase p-4 rounded-4 shadow-sm bg-white border">
+                <i class="fas fa-project-diagram text-primary display-1 mb-3"></i>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <div class="twin-badge px-3 py-2 bg-light rounded shadow-sm text-start">
+                        <i class="fas fa-coins text-warning me-2"></i><strong>Wealth</strong>
+                    </div>
+                    <div class="twin-badge px-3 py-2 bg-light rounded shadow-sm text-start">
+                        <i class="fas fa-brain text-info me-2"></i><strong>Mind</strong>
+                    </div>
+                    <div class="twin-badge px-3 py-2 bg-light rounded shadow-sm text-start">
+                        <i class="fas fa-heartbeat text-danger me-2"></i><strong>Body</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Features -->
+    <h3 class="fw-bold text-center mb-4">Core Dimensions of Your Twin</h3>
+    <div class="row g-4 mb-5">
+        <!-- Finance -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover p-4 rounded-4 text-center">
+                <div class="feature-icon-wrapper bg-warning-light text-warning mx-auto mb-3">
+                    <i class="fas fa-wallet fa-2x"></i>
+                </div>
+                <h5 class="fw-bold card-title">Financial Foresight</h5>
+                <p class="text-muted card-text">
+                    Track incomes, expenses, and savings. Our regression models project your savings trajectory over the next six months to ensure long-term stability.
+                </p>
+            </div>
+        </div>
+        <!-- Study -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover p-4 rounded-4 text-center">
+                <div class="feature-icon-wrapper bg-info-light text-info mx-auto mb-3">
+                    <i class="fas fa-graduation-cap fa-2x"></i>
+                </div>
+                <h5 class="fw-bold card-title">Cognitive Modeling</h5>
+                <p class="text-muted card-text">
+                    Log study times and focus ratings. Your twin predicts your academic performance (GPA) and recommends focus adjustments for maximum output.
+                </p>
+            </div>
+        </div>
+        <!-- Fitness -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover p-4 rounded-4 text-center">
+                <div class="feature-icon-wrapper bg-danger-light text-danger mx-auto mb-3">
+                    <i class="fas fa-running fa-2x"></i>
+                </div>
+                <h5 class="fw-bold card-title">Biometric Projections</h5>
+                <p class="text-muted card-text">
+                    Monitor exercise durations and calorie burn rates. Build consistency streaks and get monthly activity forecast levels.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Simulations & AI -->
+    <div class="row g-4 align-items-stretch mb-5">
+        <div class="col-lg-6">
+            <div class="p-4 rounded-4 bg-light h-100 border shadow-sm">
+                <h4 class="fw-bold mb-3"><i class="fas fa-magic text-primary me-2"></i>What-If Simulations</h4>
+                <p class="text-muted">
+                    Ever wondered, <em>"What if I saved ₹5,000 more every month?"</em> or <em>"What if I studied 2 extra hours weekly?"</em> 
+                </p>
+                <p class="text-muted">
+                    Our interactive simulator runs mathematical models using your current twin's parameters to output one-year financial and wellness outcomes before you commit to making changes.
+                </p>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="p-4 rounded-4 bg-dark text-light h-100 border-0 shadow-sm">
+                <h4 class="fw-bold mb-3 text-gradient"><i class="fas fa-robot me-2"></i>Gemini AI Assistant</h4>
+                <p class="text-light-50">
+                    Interact directly with your Digital Twin using our conversational AI interface powered by Google Gemini.
+                </p>
+                <p class="text-light-50">
+                    Get customized advice based on your real-time stats. Ask your twin about budgeting strategies, study improvements, or customized workout challenges, and get answers tailored specifically to your data.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center py-4 bg-light rounded-4 border p-4">
+        <h4 class="fw-bold mb-3">Ready to meet your Digital Twin?</h4>
+        <p class="text-muted mb-4">Register your account or log in to view your personalized twin model.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('register') }}" class="btn btn-primary px-4 py-2 fw-bold rounded-pill">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-pill">Log In</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Premium Styling and Animations */
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .hero-wrap {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .hero-bg-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    
+    .text-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .card-hover {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 1px solid rgba(0,0,0,0.05) !important;
+    }
+    .card-hover:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.15) !important;
+    }
+    
+    .feature-icon-wrapper {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bg-warning-light { background-color: rgba(255, 193, 7, 0.1); }
+    .bg-info-light { background-color: rgba(13, 202, 240, 0.1); }
+    .bg-danger-light { background-color: rgba(220, 53, 69, 0.1); }
+    
+    .image-showcase {
+        min-height: 250px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(circle at center, #ffffff 0%, #f1f3f9 100%);
+    }
+    
+    .text-light-50 {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .tracking-wider {
+        letter-spacing: 0.1rem;
+    }
+</style>
+{% endblock %}
