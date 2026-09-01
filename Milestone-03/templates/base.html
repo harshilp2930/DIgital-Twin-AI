@@ -1,654 +1,214 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Digital Twin AI</title>
+    <meta
+      name="description"
+      content="LifeLens AI - Your intelligent life simulation and decision assistant. Track finances, study habits, fitness, and run AI-powered simulations."
+    />
+    <title>{% block title %}LifeLens AI{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap 5 -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <!-- Font Awesome 6 -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- Fintech Theme -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/theme.css') }}"
+    />
+
     <style>
-      /* ===== THEME VARIABLES ===== */
-      :root {
-        --bg-body:        #f8f9fa;
-        --bg-navbar:      #ffffff;
-        --bg-footer:      #f8f9fa;
-        --bg-card:        #ffffff;
-        --text-primary:   #212529;
-        --text-muted:     #6c757d;
-        --text-nav:       #555555;
-        --border-color:   #dee2e6;
-        --shadow:         rgba(0,0,0,0.08);
-        --dropdown-bg:    #ffffff;
-        --dropdown-text:  #212529;
-        --alert-bg:       #ffffff;
-      }
-      [data-theme="dark"] {
-        --bg-body:        #0f1117;
-        --bg-navbar:      #1a1d27;
-        --bg-footer:      #1a1d27;
-        --bg-card:        #1e2130;
-        --text-primary:   #e2e8f0;
-        --text-muted:     #94a3b8;
-        --text-nav:       #cbd5e1;
-        --border-color:   #2d3748;
-        --shadow:         rgba(0,0,0,0.4);
-        --dropdown-bg:    #252a3a;
-        --dropdown-text:  #e2e8f0;
-        --alert-bg:       #1e2130;
-      }
-
-      /* ===== BASE ===== */
-      html, body {
-        transition: background 0.3s ease, color 0.3s ease;
-      }
       body {
-        background: var(--bg-body);
-        color: var(--text-primary);
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        opacity: 0;
+        transition: opacity 0.4s ease;
       }
 
-      /* ===== NAVBAR ===== */
-      .navbar {
-        background: var(--bg-navbar) !important;
-        box-shadow: 0 2px 12px var(--shadow) !important;
-        transition: background 0.3s ease;
-      }
-      .navbar-brand {
-        font-weight: bold;
-        color: #667eea !important;
-      }
-      .nav-link {
-        color: var(--text-nav) !important;
-        font-weight: 500;
-        transition: color 0.2s;
-      }
-      .nav-link:hover {
-        color: #667eea !important;
-      }
-      .dropdown-menu {
-        background: var(--dropdown-bg) !important;
-        border-color: var(--border-color) !important;
-      }
-      .dropdown-item {
-        color: var(--dropdown-text) !important;
-        transition: background 0.15s;
-      }
-      .dropdown-item:hover {
-        background: rgba(102,126,234,0.12) !important;
-      }
-      .dropdown-item:active {
-        background: #667eea !important;
-        color: white !important;
-      }
-      .dropdown-divider {
-        border-color: var(--border-color) !important;
+      body.page-ready {
+        opacity: 1;
       }
 
-      /* ===== BUTTONS ===== */
-      .btn-primary {
-        background: #667eea;
-        border: none;
-      }
-      .btn-primary:hover {
-        background: #5a6fd6;
-      }
-
-      /* ===== USER AVATAR ===== */
-      .user-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #667eea;
-        color: white;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-      .admin-badge {
-        font-size: 0.6rem;
-        background: #ed64a6;
-        color: white;
-        padding: 0.15rem 0.5rem;
-        border-radius: 30px;
-        margin-left: 0.3rem;
-        vertical-align: middle;
-      }
-      /* Optional: active link highlight */
-      .nav-link.active-link {
-        color: #667eea !important;
-        font-weight: 600;
+      .dt-main-grid {
+        opacity: 0;
+        transform: translateY(12px);
+        transition:
+          opacity 0.45s ease,
+          transform 0.45s ease;
       }
 
-      /* ===== FOOTER ===== */
-      footer {
-        background: var(--bg-footer) !important;
-        border-top-color: var(--border-color) !important;
-        transition: background 0.3s ease;
+      body.page-ready .dt-main-grid {
+        opacity: 1;
+        transform: translateY(0);
       }
-      footer .text-muted {
-        color: var(--text-muted) !important;
-      }
-
-      /* ===== CARDS / ALERTS (general) ===== */
-      .card {
-        background: var(--bg-card) !important;
-        border-color: var(--border-color) !important;
-        color: var(--text-primary) !important;
-      }
-      .alert {
-        background: var(--alert-bg) !important;
-        color: var(--text-primary) !important;
-        border-color: var(--border-color) !important;
-      }
-      .bg-light {
-        background: var(--bg-footer) !important;
-      }
-      .table {
-        color: var(--text-primary) !important;
-        border-color: var(--border-color) !important;
-      }
-      .text-muted {
-        color: var(--text-muted) !important;
-      }
-
-      /* ===== THEME TOGGLE BUTTON ===== */
-      #themeToggleBtn {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        border: 2px solid #667eea;
-        background: transparent;
-        color: #667eea;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.25s, color 0.25s, transform 0.3s, box-shadow 0.25s;
-        padding: 0;
-        outline: none;
-      }
-      #themeToggleBtn:hover {
-        background: #667eea;
-        color: #fff;
-        box-shadow: 0 0 10px rgba(102,126,234,0.5);
-        transform: rotate(20deg) scale(1.1);
-      }
-      #themeToggleBtn .icon-sun,
-      #themeToggleBtn .icon-moon {
-        transition: opacity 0.2s, transform 0.3s;
-        position: absolute;
-      }
-      #themeToggleBtn {
-        position: relative;
-      }
-      [data-theme="light"] #themeToggleBtn .icon-moon { opacity: 1; transform: scale(1); }
-      [data-theme="light"] #themeToggleBtn .icon-sun  { opacity: 0; transform: scale(0.5); }
-      [data-theme="dark"]  #themeToggleBtn .icon-sun  { opacity: 1; transform: scale(1); }
-      [data-theme="dark"]  #themeToggleBtn .icon-moon { opacity: 0; transform: scale(0.5); }
-    </style>
-
-    <!-- ===== FULL DARK MODE OVERRIDES (all pages) ===== -->
-    <style id="dark-mode-overrides">
-      /* ---- Page wrapper backgrounds ---- */
-      [data-theme="dark"] body,
-      [data-theme="dark"] .dashboard-wrapper,
-      [data-theme="dark"] .finance-wrapper,
-      [data-theme="dark"] .fitness-wrapper,
-      [data-theme="dark"] .study-wrapper,
-      [data-theme="dark"] .assistant-wrapper,
-      [data-theme="dark"] .admin-wrapper,
-      [data-theme="dark"] .simulation-wrapper,
-      [data-theme="dark"] .sim-wrapper {
-        background: #0f1117 !important;
-        color: #e2e8f0 !important;
-      }
-
-      /* ---- Generic cards & custom cards ---- */
-      [data-theme="dark"] .card,
-      [data-theme="dark"] .card-custom,
-      [data-theme="dark"] .glass-card,
-      [data-theme="dark"] .chart-box,
-      [data-theme="dark"] .predict-box,
-      [data-theme="dark"] .activity-card,
-      [data-theme="dark"] .quick-stat,
-      [data-theme="dark"] .chart-container,
-      [data-theme="dark"] .history-sidebar,
-      [data-theme="dark"] .chat-area,
-      [data-theme="dark"] .feature-card {
-        background: #1e2130 !important;
-        border-color: #2d3748 !important;
-        color: #e2e8f0 !important;
-      }
-
-      /* ---- Glass variables for dark ---- */
-      [data-theme="dark"] {
-        --glass-bg: rgba(30, 33, 48, 0.85) !important;
-        --glass-border: rgba(255,255,255,0.07) !important;
-        --shadow-sm: 0 8px 32px rgba(0,0,0,0.35) !important;
-        --shadow-hover: 0 16px 48px rgba(0,0,0,0.5) !important;
-      }
-
-      /* ---- Card headers ---- */
-      [data-theme="dark"] .card-header,
-      [data-theme="dark"] .card-header-custom,
-      [data-theme="dark"] .activity-card .card-header {
-        background: rgba(255,255,255,0.04) !important;
-        border-bottom-color: #2d3748 !important;
-        color: #e2e8f0 !important;
-      }
-
-      /* ---- Card body text ---- */
-      [data-theme="dark"] .card-body,
-      [data-theme="dark"] .card-footer {
-        background: transparent !important;
-        color: #e2e8f0 !important;
-      }
-
-      /* ---- Bootstrap bg utilities ---- */
-      [data-theme="dark"] .bg-white,
-      [data-theme="dark"] .bg-light {
-        background: #1e2130 !important;
-      }
-
-      /* ---- Headings & text colours ---- */
-      [data-theme="dark"] h1,[data-theme="dark"] h2,[data-theme="dark"] h3,
-      [data-theme="dark"] h4,[data-theme="dark"] h5,[data-theme="dark"] h6,
-      [data-theme="dark"] .fw-bold, [data-theme="dark"] .fw-semibold,
-      [data-theme="dark"] .text-dark { color: #e2e8f0 !important; }
-
-      [data-theme="dark"] .text-muted,
-      [data-theme="dark"] .profile-role,
-      [data-theme="dark"] .profile-detail,
-      [data-theme="dark"] .goal-sub,
-      [data-theme="dark"] .qs-label,
-      [data-theme="dark"] .stat-item .label,
-      [data-theme="dark"] .history-item .timestamp,
-      [data-theme="dark"] .score-ring .inner small { color: #94a3b8 !important; }
-
-      [data-theme="dark"] .profile-name,
-      [data-theme="dark"] .goal-title,
-      [data-theme="dark"] .qs-value,
-      [data-theme="dark"] .stat-item .value,
-      [data-theme="dark"] .activity-card .card-header { color: #e2e8f0 !important; }
-
-      /* Profile name gradient fix in dark */
-      [data-theme="dark"] .profile-name {
-        background: linear-gradient(135deg, #a78bfa, #818cf8) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        background-clip: text !important;
-      }
-
-      /* ---- Stat items ---- */
-      [data-theme="dark"] .stat-item {
-        background: rgba(255,255,255,0.04) !important;
-        border-color: rgba(255,255,255,0.07) !important;
-      }
-
-      /* ---- Score ring inner ---- */
-      [data-theme="dark"] .score-ring .inner {
-        background: #1e2130 !important;
-        color: #e2e8f0 !important;
-      }
-      [data-theme="dark"] .score-ring {
-        background: conic-gradient(#667eea 0% calc(var(--score)*1%), #2d3748 calc(var(--score)*1%) 100%) !important;
-      }
-
-      /* ---- Quick stats ---- */
-      [data-theme="dark"] .quick-stat {
-        background: #252a3a !important;
-      }
-
-      /* ---- Progress bars & tracks ---- */
-      [data-theme="dark"] .progress {
-        background: #2d3748 !important;
-      }
-      [data-theme="dark"] .progress-goal,
-      [data-theme="dark"] .gpa-gauge {
-        background: #2d3748 !important;
-      }
-
-      /* ---- Tables ---- */
-      [data-theme="dark"] .table,
-      [data-theme="dark"] .table-custom {
-        color: #e2e8f0 !important;
-        border-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .table-custom th,
-      [data-theme="dark"] .table th {
-        color: #94a3b8 !important;
-        border-bottom-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .table-custom td,
-      [data-theme="dark"] .table td {
-        color: #e2e8f0 !important;
-        border-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
-        background-color: rgba(255,255,255,0.03) !important;
-        color: #e2e8f0 !important;
-      }
-      [data-theme="dark"] .table-hover > tbody > tr:hover > * {
-        background-color: rgba(102,126,234,0.08) !important;
-      }
-
-      /* ---- Form controls ---- */
-      [data-theme="dark"] .form-control,
-      [data-theme="dark"] .form-select,
-      [data-theme="dark"] input,
-      [data-theme="dark"] select,
-      [data-theme="dark"] textarea {
-        background: #252a3a !important;
-        border-color: #3d4a60 !important;
-        color: #e2e8f0 !important;
-      }
-      [data-theme="dark"] .form-control::placeholder,
-      [data-theme="dark"] textarea::placeholder { color: #64748b !important; }
-      [data-theme="dark"] .form-control:focus,
-      [data-theme="dark"] .form-select:focus {
-        background: #2a3045 !important;
-        border-color: #667eea !important;
-        color: #e2e8f0 !important;
-        box-shadow: 0 0 0 3px rgba(102,126,234,0.2) !important;
-      }
-      [data-theme="dark"] .form-label,
-      [data-theme="dark"] label { color: #cbd5e1 !important; }
-      [data-theme="dark"] .input-group-text {
-        background: #252a3a !important;
-        border-color: #3d4a60 !important;
-        color: #94a3b8 !important;
-      }
-
-      /* ---- List groups ---- */
-      [data-theme="dark"] .list-group-item {
-        background: transparent !important;
-        border-color: #2d3748 !important;
-        color: #e2e8f0 !important;
-      }
-      [data-theme="dark"] .list-group-item:hover {
-        background: rgba(102,126,234,0.08) !important;
-      }
-      [data-theme="dark"] .activity-card .list-group-item {
-        border-bottom-color: rgba(255,255,255,0.05) !important;
-      }
-
-      /* ---- Goal items ---- */
-      [data-theme="dark"] .goal-item {
-        border-bottom-color: rgba(255,255,255,0.06) !important;
-      }
-
-      /* ---- Assistant / Chat UI ---- */
-      [data-theme="dark"] .history-sidebar {
-        background: #1a1d27 !important;
-        box-shadow: none !important;
-      }
-      [data-theme="dark"] .history-sidebar h6 {
-        color: #e2e8f0 !important;
-        border-bottom-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .history-item {
-        border-bottom-color: rgba(255,255,255,0.05) !important;
-      }
-      [data-theme="dark"] .history-item:hover { background: #252a3a !important; }
-      [data-theme="dark"] .history-item .question { color: #cbd5e1 !important; }
-
-      /* Chat area & body */
-      [data-theme="dark"] .chat-area { background: #1a1d27 !important; }
-      [data-theme="dark"] .chat-body {
-        background: #151820 !important;
-        color: #e2e8f0 !important;
-      }
-
-      /* Chat input bar */
-      [data-theme="dark"] .chat-input {
-        background: #1a1d27 !important;
-        border-top-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .chat-input .input-group {
-        background: #252a3a !important;
-        border-color: #3d4a60 !important;
-      }
-      [data-theme="dark"] .chat-input .form-control {
-        background: transparent !important;
-        color: #e2e8f0 !important;
-      }
-
-      /* Chat bubbles */
-      [data-theme="dark"] .chat-message.assistant .bubble {
-        background: #252a3a !important;
-        color: #e2e8f0 !important;
-        border-color: #3d4a60 !important;
-      }
-      [data-theme="dark"] .chat-message.assistant .avatar-small {
-        background: #2d3748 !important;
-        color: #94a3b8 !important;
-      }
-      [data-theme="dark"] .chat-message.assistant .username-label {
-        color: #94a3b8 !important;
-      }
-
-      /* Quick action / outline buttons (assistant page) */
-      [data-theme="dark"] .btn-outline {
-        background: #252a3a !important;
-        border-color: #3d4a60 !important;
-        color: #94a3b8 !important;
-      }
-      [data-theme="dark"] .btn-outline:hover {
-        border-color: #667eea !important;
-        color: #818cf8 !important;
-        background: rgba(102,126,234,0.1) !important;
-      }
-
-      /* Empty states */
-      [data-theme="dark"] .empty-state { color: #64748b !important; }
-      [data-theme="dark"] .empty-state i { color: #3d4a60 !important; }
-
-      /* Log scrollbar (fitness/study) */
-      [data-theme="dark"] .log-scroll::-webkit-scrollbar-thumb {
-        background: #3d4a60 !important;
-      }
-
-      /* ---- Modal ---- */
-      [data-theme="dark"] .modal-content {
-        background: #1e2130 !important;
-        border-color: #2d3748 !important;
-        color: #e2e8f0 !important;
-      }
-      [data-theme="dark"] .modal-header,
-      [data-theme="dark"] .modal-footer {
-        border-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .modal-title { color: #e2e8f0 !important; }
-      [data-theme="dark"] .btn-close { filter: invert(1) !important; }
-
-      /* ---- Badges ---- */
-      [data-theme="dark"] .badge.bg-light { background: #252a3a !important; color: #e2e8f0 !important; }
-      [data-theme="dark"] .badge.bg-secondary { background: #3d4a60 !important; }
-
-      /* ---- Alerts ---- */
-      [data-theme="dark"] .alert-success { background: #1a2e1a !important; border-color: #2d6a2d !important; color: #86efac !important; }
-      [data-theme="dark"] .alert-danger  { background: #2e1a1a !important; border-color: #6a2d2d !important; color: #fca5a5 !important; }
-      [data-theme="dark"] .alert-warning { background: #2e2518 !important; border-color: #6a5a2d !important; color: #fcd34d !important; }
-      [data-theme="dark"] .alert-info    { background: #182a2e !important; border-color: #2d5a6a !important; color: #7dd3fc !important; }
-
-      /* ---- Pagination ---- */
-      [data-theme="dark"] .page-link {
-        background: #1e2130 !important;
-        border-color: #2d3748 !important;
-        color: #94a3b8 !important;
-      }
-      [data-theme="dark"] .page-link:hover { background: #252a3a !important; color: #e2e8f0 !important; }
-      [data-theme="dark"] .page-item.active .page-link { background: #667eea !important; border-color: #667eea !important; }
-
-      /* ---- Dividers / hr ---- */
-      [data-theme="dark"] hr,
-      [data-theme="dark"] .dropdown-divider { border-color: #2d3748 !important; }
-
-      /* ---- Outline buttons ---- */
-      [data-theme="dark"] .btn-outline-primary   { color: #818cf8 !important; border-color: #818cf8 !important; }
-      [data-theme="dark"] .btn-outline-primary:hover { background: #818cf8 !important; color: #fff !important; }
-      [data-theme="dark"] .btn-outline-secondary { color: #94a3b8 !important; border-color: #4a5568 !important; }
-      [data-theme="dark"] .btn-outline-secondary:hover { background: rgba(148,163,184,0.12) !important; color: #e2e8f0 !important; }
-      [data-theme="dark"] .btn-outline-danger    { color: #fca5a5 !important; border-color: #fca5a5 !important; }
-      [data-theme="dark"] .btn-outline-danger:hover { background: #fca5a5 !important; color: #1a0000 !important; }
-
-      /* ---- bg-gradient-soft ---- */
-      [data-theme="dark"] .bg-gradient-soft {
-        background: linear-gradient(145deg, #1a1d27 0%, #151820 100%) !important;
-      }
-
-      /* ---- Feed items (admin) ---- */
-      [data-theme="dark"] .feed-item { border-left-color: #667eea; color: #e2e8f0 !important; }
-
-      /* ---- Chart containers ---- */
-      [data-theme="dark"] .chart-container {
-        background: #1e2130 !important;
-      }
-
-      /* ---- Index page: feature cards text ---- */
-      [data-theme="dark"] .feature-card p,
-      [data-theme="dark"] .feature-card small { color: #94a3b8 !important; }
-      [data-theme="dark"] .stat-number { color: #e2e8f0 !important; }
-
-      /* ---- TABLE ROW / CELL backgrounds (the main dark-mode fix) ---- */
-      /* Bootstrap sets --bs-table-bg on tr/td which overrides background.
-         We must reset it AND set explicit backgrounds. */
-      [data-theme="dark"] .table,
-      [data-theme="dark"] .table-custom {
-        --bs-table-bg: #1e2130 !important;
-        --bs-table-striped-bg: rgba(255,255,255,0.03) !important;
-        --bs-table-hover-bg: rgba(102,126,234,0.08) !important;
-        --bs-table-border-color: #2d3748 !important;
-        --bs-table-color: #e2e8f0 !important;
-        background-color: #1e2130 !important;
-        color: #e2e8f0 !important;
-        border-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .table > thead,
-      [data-theme="dark"] .table-custom > thead {
-        background: #1e2130 !important;
-      }
-      [data-theme="dark"] .table > tbody,
-      [data-theme="dark"] .table-custom > tbody {
-        background: #1e2130 !important;
-      }
-      [data-theme="dark"] .table tr,
-      [data-theme="dark"] .table-custom tr {
-        background-color: #1e2130 !important;
-        --bs-table-bg: #1e2130 !important;
-        border-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .table th,
-      [data-theme="dark"] .table-custom th {
-        background-color: #1e2130 !important;
-        color: #94a3b8 !important;
-        border-bottom-color: #2d3748 !important;
-        border-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .table td,
-      [data-theme="dark"] .table-custom td {
-        background-color: #1e2130 !important;
-        color: #e2e8f0 !important;
-        border-color: #2d3748 !important;
-      }
-      [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
-        --bs-table-bg: rgba(255,255,255,0.03) !important;
-        background-color: rgba(255,255,255,0.03) !important;
-        color: #e2e8f0 !important;
-      }
-      [data-theme="dark"] .table-hover > tbody > tr:hover > * {
-        --bs-table-bg: rgba(102,126,234,0.08) !important;
-        background-color: rgba(102,126,234,0.08) !important;
-      }
-
-      /* ---- Scrollbars (webkit) ---- */
-      [data-theme="dark"] ::-webkit-scrollbar { width: 6px; height: 6px; }
-      [data-theme="dark"] ::-webkit-scrollbar-track { background: #1a1d27; }
-      [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3d4a60; border-radius: 4px; }
-      [data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #667eea; }
-
-
-      /* ===== LIGHT THEME EXPLICIT RESTORATION ===== */
-      /* Ensures switching back to light mode looks fully correct */
-      [data-theme="light"] .chat-body          { background: #fafbfc !important; color: #2d3748 !important; }
-      [data-theme="light"] .chat-input         { background: white !important; border-top-color: #edf2f7 !important; }
-      [data-theme="light"] .chat-input .input-group { background: #f7fafc !important; border-color: #e2e8f0 !important; }
-      [data-theme="light"] .chat-input .form-control { color: #2d3748 !important; }
-      [data-theme="light"] .chat-message.assistant .bubble  { background: white !important; color: #2d3748 !important; border-color: #edf2f7 !important; }
-      [data-theme="light"] .chat-message.assistant .avatar-small { background: #edf2f7 !important; color: #2d3748 !important; }
-      [data-theme="light"] .chat-message.assistant .username-label { color: #718096 !important; }
-      [data-theme="light"] .history-sidebar    { background: white !important; }
-      [data-theme="light"] .history-sidebar h6 { color: #2d3748 !important; border-bottom-color: #edf2f7 !important; }
-      [data-theme="light"] .history-item:hover { background: #f0f4ff !important; }
-      [data-theme="light"] .history-item .question { color: #2d3748 !important; }
-      [data-theme="light"] .btn-outline        { background: white !important; border-color: #e2e8f0 !important; color: #4a5568 !important; }
-      [data-theme="light"] .chart-container    { background: white !important; }
-      [data-theme="light"] .card-header-custom { border-bottom-color: #edf2f7 !important; }
-      [data-theme="light"] .progress-goal,
-      [data-theme="light"] .gpa-gauge          { background: #edf2f7 !important; }
-      [data-theme="light"] .empty-state        { color: #a0aec0 !important; }
-      [data-theme="light"] .sim-wrapper,
-      [data-theme="light"] .finance-wrapper,
-      [data-theme="light"] .fitness-wrapper,
-      [data-theme="light"] .study-wrapper      { background: #f7fafc !important; }
-      [data-theme="light"] .dashboard-wrapper  { background: linear-gradient(145deg, #f0f4ff 0%, #faf0ff 100%) !important; }
     </style>
 
     {% block extra_css %}{% endblock %}
   </head>
   <body>
+    <!-- Immediately set theme to avoid FOUC -->
+    <script>
+      (function () {
+        var saved = localStorage.getItem("dt-ai-theme");
+        document.documentElement.setAttribute("data-theme", saved || "dark");
+      })();
+    </script>
+
     <!-- ===== NAVBAR ===== -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-      <div class="container">
-        <a class="navbar-brand" href="{{ url_for('index') }}">
-          <i class="fas fa-brain"></i> Digital Twin AI
+    <nav class="dt-navbar navbar navbar-expand-lg" id="dtNavbar">
+      <div class="container-fluid px-4">
+        <!-- Brand -->
+        <a class="dt-navbar-brand" href="{{ url_for('index') }}">
+          <span class="dt-brand-icon"><i class="fas fa-brain"></i></span>
+          <span class="dt-brand-text">LifeLens AI</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
+
+        <!-- Mobile Toggler -->
+        <div class="d-flex align-items-center gap-2 d-lg-none">
+          <button
+            id="themeToggleBtn"
+            class="dt-theme-btn"
+            title="Toggle theme"
+            aria-label="Toggle theme"
+          >
+            <i class="fas fa-sun icon-sun"></i>
+            <i class="fas fa-moon icon-moon"></i>
+          </button>
+          <button
+            class="navbar-toggler dt-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+
+        <!-- Nav Links -->
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto align-items-lg-center">
+          <ul
+            class="navbar-nav mx-auto align-items-lg-center gap-lg-0"
+            id="dt-nav-links"
+          >
             {% if current_user.is_authenticated %}
 
-            <!-- ===== ADMIN DROPDOWN (only visible to admins) ===== -->
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}"
+                href="{{ url_for('user_dashboard') }}"
+                id="nl-dashboard"
+              >
+                <i class="fas fa-gauge-high dt-nav-icon"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_financial' %}active active-finance{% endif %}"
+                href="{{ url_for('user_financial') }}"
+                id="nl-finance"
+              >
+                <i class="fas fa-coins dt-nav-icon"></i>
+                <span>Finance</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_study' %}active active-study{% endif %}"
+                href="{{ url_for('user_study') }}"
+                id="nl-study"
+              >
+                <i class="fas fa-book-open dt-nav-icon"></i>
+                <span>Study</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_fitness' %}active active-fitness{% endif %}"
+                href="{{ url_for('user_fitness') }}"
+                id="nl-fitness"
+              >
+                <i class="fas fa-dumbbell dt-nav-icon"></i>
+                <span>Fitness</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_simulation' %}active{% endif %}"
+                href="{{ url_for('user_simulation') }}"
+                id="nl-sim"
+              >
+                <i class="fas fa-robot dt-nav-icon"></i>
+                <span>Simulate</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_assistant' %}active active-ai{% endif %}"
+                href="{{ url_for('user_assistant') }}"
+                id="nl-ai"
+              >
+                <i class="fas fa-comment-dots dt-nav-icon"></i>
+                <span>AI Chat</span>
+              </a>
+            </li>
+
             {% if current_user.is_admin %}
             <li class="nav-item dropdown">
               <a
-                class="nav-link dropdown-toggle"
+                class="dt-nav-link {% if request.endpoint and request.endpoint.startswith('admin') %}active active-admin{% endif %} dropdown-toggle"
                 href="#"
                 id="adminDropdown"
                 role="button"
                 data-bs-toggle="dropdown"
+                aria-expanded="false"
               >
-                <i class="fas fa-user-cog"></i> Admin
+                <i class="fas fa-user-shield dt-nav-icon"></i>
+                <span>Admin</span>
               </a>
-              <ul class="dropdown-menu dropdown-menu-end">
+              <ul class="dropdown-menu dropdown-menu-end dt-dropdown">
                 <li>
                   <a
                     class="dropdown-item"
                     href="{{ url_for('admin_dashboard') }}"
                   >
-                    <i class="fas fa-chart-pie me-2"></i>Dashboard
-                  </a>
+                    <i
+                      class="fas fa-chart-pie me-2"
+                      style="color: var(--color-ai)"
+                    ></i
+                    >Dashboard</a
+                  >
                 </li>
                 <li>
                   <a class="dropdown-item" href="{{ url_for('admin_users') }}">
-                    <i class="fas fa-users me-2"></i>Manage Users
-                  </a>
+                    <i
+                      class="fas fa-users me-2"
+                      style="color: var(--color-finance)"
+                    ></i
+                    >Manage Users</a
+                  >
                 </li>
                 <li><hr class="dropdown-divider" /></li>
                 <li>
@@ -656,78 +216,112 @@
                     class="dropdown-item"
                     href="{{ url_for('user_dashboard') }}"
                   >
-                    <i class="fas fa-user me-2"></i>My Profile
-                  </a>
+                    <i class="fas fa-user me-2 text-muted"></i>My Profile</a
+                  >
                 </li>
               </ul>
             </li>
-            {% endif %}
+            {% endif %} {% else %}
 
-            <!-- ===== USER FEATURES (visible to EVERYONE – admins AND normal users) ===== -->
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('user_dashboard') }}">
-                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('user_financial') }}">
-                <i class="fas fa-coins me-1"></i>Financial
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('user_study') }}">
-                <i class="fas fa-book-open me-1"></i>Study
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('user_fitness') }}">
-                <i class="fas fa-running me-1"></i>Fitness
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('user_simulation') }}">
-                <i class="fas fa-robot me-1"></i>Simulation
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('user_assistant') }}">
-                <i class="fas fa-comment-dots me-1"></i>Assistant
-              </a>
-            </li>
-
-            <!-- ===== USER DROPDOWN (avatar + logout) ===== -->
-            <li class="nav-item dropdown">
               <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="userDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
+                class="dt-nav-link {% if request.endpoint == 'index' %}active{% endif %}"
+                href="{{ url_for('index') }}"
               >
-                <span class="user-avatar"
+                <i class="fas fa-house dt-nav-icon"></i><span>Home</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'login' %}active{% endif %}"
+                href="{{ url_for('login') }}"
+              >
+                <i class="fas fa-right-to-bracket dt-nav-icon"></i
+                ><span>Login</span>
+              </a>
+            </li>
+
+            {% endif %}
+          </ul>
+
+          <!-- Right side controls -->
+          <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+            <!-- Theme Toggle (desktop) -->
+            <button
+              id="themeToggleBtn"
+              class="dt-theme-btn d-none d-lg-flex"
+              title="Toggle theme"
+              aria-label="Toggle theme"
+            >
+              <i class="fas fa-sun icon-sun"></i>
+              <i class="fas fa-moon icon-moon"></i>
+            </button>
+
+            {% if current_user.is_authenticated %}
+            <!-- User Dropdown -->
+            <div class="dropdown">
+              <button
+                class="dt-user-pill dropdown-toggle"
+                type="button"
+                id="userDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="dt-user-avatar"
                   >{{ current_user.username[0]|upper }}</span
                 >
-                <span class="ms-1">{{ current_user.username }}</span>
+                <span class="dt-user-name d-none d-xl-inline"
+                  >{{ current_user.username }}</span
+                >
                 {% if current_user.is_admin %}
-                <span class="admin-badge">Admin</span>
+                <span class="dt-admin-badge">Admin</span>
                 {% endif %}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end">
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end dt-dropdown">
+                <li>
+                  <div
+                    class="px-3 py-2 border-bottom"
+                    style="border-color: var(--border-color) !important"
+                  >
+                    <div
+                      style="
+                        font-weight: 700;
+                        font-size: 0.85rem;
+                        color: var(--text-primary);
+                      "
+                    >
+                      {{ current_user.username }}
+                    </div>
+                    <div
+                      style="font-size: 0.72rem; color: var(--text-secondary)"
+                    >
+                      {{ current_user.email }}
+                    </div>
+                  </div>
+                </li>
                 <li>
                   <a
                     class="dropdown-item"
                     href="{{ url_for('user_dashboard') }}"
                   >
-                    <i class="fas fa-user me-2"></i>Profile
-                  </a>
+                    <i
+                      class="fas fa-user me-2"
+                      style="color: var(--brand-primary)"
+                    ></i
+                    >My Profile</a
+                  >
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
                     href="{{ url_for('user_simulation') }}"
                   >
-                    <i class="fas fa-chart-line me-2"></i>Simulate
-                  </a>
+                    <i
+                      class="fas fa-chart-line me-2"
+                      style="color: var(--color-finance)"
+                    ></i
+                    >Simulate</a
+                  >
                 </li>
                 <li><hr class="dropdown-divider" /></li>
                 <li>
@@ -735,54 +329,39 @@
                     class="dropdown-item text-danger"
                     href="{{ url_for('logout') }}"
                   >
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                  </a>
+                    <i class="fas fa-right-from-bracket me-2"></i>Logout</a
+                  >
                 </li>
               </ul>
-            </li>
+            </div>
 
             {% else %}
-
-            <!-- ===== NOT LOGGED IN ===== -->
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}">
-                <i class="fas fa-sign-in-alt me-1"></i>Login
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}">
-                <i class="fas fa-user-plus me-1"></i>Register
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('index') }}">
-                <i class="fas fa-brain me-1"></i>Home
-              </a>
-            </li>
+            <a href="{{ url_for('register') }}" class="dt-cta-btn">
+              <i class="fas fa-user-plus me-1"></i>Get Started
+            </a>
             {% endif %}
-
-            <!-- ===== THEME TOGGLE BUTTON ===== -->
-            <li class="nav-item ms-2">
-              <button id="themeToggleBtn" title="Toggle dark / light mode" aria-label="Toggle theme">
-                <i class="fas fa-sun icon-sun"></i>
-                <i class="fas fa-moon icon-moon"></i>
-              </button>
-            </li>
-          </ul>
+          </div>
         </div>
       </div>
     </nav>
 
     <!-- ===== FLASH MESSAGES ===== -->
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
-    <div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="container-fluid px-4 mt-3">
       {% for category, msg in messages %}
-      <div class="alert alert-{{ category if category in ['success', 'danger', 'warning', 'info'] else 'info' }} alert-dismissible fade show" role="alert">
-        {% if category == 'success' %}<i class="fas fa-check-circle me-2"></i>
-        {% elif category == 'danger' %}<i class="fas fa-exclamation-circle me-2"></i>
-        {% elif category == 'warning' %}<i class="fas fa-exclamation-triangle me-2"></i>
-        {% else %}<i class="fas fa-info-circle me-2"></i>{% endif %}
-        {{ msg }}
+      <div
+        class="alert alert-{{ category if category in ['success','danger','warning','info'] else 'info' }} alert-dismissible fade show fade-in-up"
+        role="alert"
+      >
+        {% if category == 'success' %}<i class="fas fa-circle-check me-2"></i>
+        {% elif category == 'danger' %}<i
+          class="fas fa-circle-exclamation me-2"
+        ></i>
+        {% elif category == 'warning' %}<i
+          class="fas fa-triangle-exclamation me-2"
+        ></i>
+        {% else %}<i class="fas fa-circle-info me-2"></i>{% endif %} {{ msg }}
         <button
           type="button"
           class="btn-close"
@@ -793,31 +372,37 @@
     </div>
     {% endif %} {% endwith %}
 
-    <!-- ===== PAGE CONTENT ===== -->
-    {% block content %}{% endblock %}
+    <!-- ===== PAGE CONTENT (grid layout) ===== -->
+    <main class="dt-main-grid">{% block content %}{% endblock %}</main>
 
     <!-- ===== FOOTER ===== -->
-    <footer class="mt-5 py-4 bg-light border-top">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-md-6 text-center text-md-start">
-            <span class="text-muted small"
-              >© 2026 Digital Twin AI – All rights reserved.</span
+    <footer class="dt-footer">
+      <div class="container-fluid px-4">
+        <div class="row align-items-center g-2">
+          <div class="col-md-4 text-center text-md-start">
+            <span class="dt-footer-brand"
+              ><i class="fas fa-brain me-1"></i>LifeLens AI</span
+            >
+            <span class="ms-2 text-secondary small"
+              >- Simulate your future. Live smarter.</span
             >
           </div>
-          <div class="col-md-6 text-center text-md-end">
-            <a href="{{ url_for('privacy') }}" class="text-muted text-decoration-none me-3 small"
+          <div class="col-md-4 text-center">
+            <span class="text-secondary small"
+              >© 2026 LifeLens AI. All rights reserved.</span
+            >
+          </div>
+          <div class="col-md-4 text-center text-md-end">
+            <a href="{{ url_for('privacy') }}" class="dt-footer-link me-3"
               >Privacy</a
             >
-            <a href="{{ url_for('terms') }}" class="text-muted text-decoration-none me-3 small"
+            <a href="{{ url_for('terms') }}" class="dt-footer-link me-3"
               >Terms</a
             >
-            <a href="{{ url_for('contact') }}" class="text-muted text-decoration-none me-3 small"
+            <a href="{{ url_for('contact') }}" class="dt-footer-link me-3"
               >Contact</a
             >
-            <a href="{{ url_for('about') }}" class="text-muted text-decoration-none small"
-              >About</a
-            >
+            <a href="{{ url_for('about') }}" class="dt-footer-link">About</a>
           </div>
         </div>
       </div>
@@ -826,27 +411,13 @@
     <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- ===== THEME TOGGLE SCRIPT ===== -->
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script>
-      (function () {
-        const html = document.documentElement;
-        const btn  = document.getElementById('themeToggleBtn');
-        const STORAGE_KEY = 'dt-ai-theme';
-
-        // Apply saved or system preference
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initial = saved || (prefersDark ? 'dark' : 'light');
-        html.setAttribute('data-theme', initial);
-
-        btn.addEventListener('click', function () {
-          const current = html.getAttribute('data-theme');
-          const next    = current === 'dark' ? 'light' : 'dark';
-          html.setAttribute('data-theme', next);
-          localStorage.setItem(STORAGE_KEY, next);
+      document.addEventListener("DOMContentLoaded", function () {
+        requestAnimationFrame(function () {
+          document.body.classList.add("page-ready");
         });
-      })();
+      });
     </script>
 
     {% block scripts %}{% endblock %}

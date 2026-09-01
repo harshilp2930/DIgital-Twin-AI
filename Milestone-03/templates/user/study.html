@@ -1,189 +1,45 @@
 {% extends "base.html" %}
 {% block extra_css %}
-<style>
-.study-wrapper {
-background: #f7fafc;
-border-radius: 20px;
-padding: 1rem;
-}
-.metric-card {
-border-radius: 16px;
-padding: 1rem 1.2rem;
-color: white;
-transition: transform 0.2s;
-height: 100%;
-}
-.metric-card:hover {
-transform: translateY(-3px);
-box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-}
-.metric-card h5 {
-font-weight: 400;
-opacity: 0.9;
-font-size: 0.85rem;
-margin-bottom: 0.2rem;
-}
-.metric-card h2 {
-font-weight: 700;
-margin: 0.1rem 0;
-font-size: 1.8rem;
-}
-.metric-card small {
-opacity: 0.8;
-font-size: 0.75rem;
-}
-.card-custom {
-border: none;
-border-radius: 16px;
-box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-overflow: hidden;
-}
-.card-header-custom {
-background: transparent;
-font-weight: 600;
-padding: 0.8rem 1.2rem;
-border-bottom: 1px solid #edf2f7;
-font-size: 0.95rem;
-}
-
-.stat-icon {
-font-size: 1.8rem;
-opacity: 0.7;
-}
-.form-control, .form-select {
-border-radius: 10px;
-border: 1.5px solid #e2e8f0;
-transition: border-color 0.2s;
-}
-.form-control:focus, .form-select:focus {
-border-color: #667eea;
-box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
-}
-.btn-primary-custom {
-background: linear-gradient(135deg, #667eea, #764ba2);
-border: none;
-border-radius: 50px;
-padding: 0.5rem 1.5rem;
-font-weight: 600;
-color: white;
-transition: all 0.2s;
-width: 100%;
-}
-.btn-primary-custom:hover {
-transform: scale(1.02);
-box-shadow: 0 8px 25px rgba(102,126,234,0.4);
-color: white;
-}
-.chart-container {
-background: white;
-border-radius: 14px;
-padding: 0.8rem;
-box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-height: 100%;
-}
-.chart-container canvas {
-max-height: 180px;
-}
-.table-custom th {
-font-weight: 600;
-color: #4a5568;
-font-size: 0.8rem;
-text-transform: uppercase;
-letter-spacing: 0.3px;
-border-bottom: 2px solid #edf2f7;
-}
-.table-custom td {
-font-size: 0.85rem;
-
-vertical-align: middle;
-}
-.log-scroll {
-max-height: 300px;
-overflow-y: auto;
-}
-.log-scroll::-webkit-scrollbar {
-width: 4px;
-}
-.log-scroll::-webkit-scrollbar-thumb {
-background: #cbd5e0;
-border-radius: 10px;
-}
-.gpa-gauge {
-height: 10px;
-border-radius: 10px;
-background: #edf2f7;
-overflow: hidden;
-margin: 0.5rem 0;
-}
-.gpa-gauge .gpa-fill {
-height: 100%;
-border-radius: 10px;
-background: linear-gradient(90deg, #43e97b, #38f9d7);
-transition: width 0.6s ease;
-}
-.action-btn {
-padding: 0.2rem 0.5rem;
-font-size: 0.8rem;
-}
-</style>
 {% endblock %}
 {% block content %}
-<div class="study-wrapper">
+<div class="dt-dashboard-wrapper">
 <!-- Page Title -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-<h3 class="fw-bold mb-0"><i class="fas fa-book-open text-success me-2"></i>Study &
-Productivity</h3>
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h3 class="fw-bold mb-0"><i class="fas fa-book-open me-2" style="color:var(--color-study);"></i>Study & Productivity</h3>
 <span class="badge bg-light text-dark">Last updated: {{ datetime.now().strftime('%d %b, %I:%M %p') }}</span>
 </div>
 <!-- ===== Summary Metrics ===== -->
 <div class="row g-3 mb-4">
 <div class="col-6 col-md-3">
-<div class="metric-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-<div class="d-flex justify-content-between">
-
-<div>
-<h5>Total Hours</h5>
-<h2>{{ total_hours|round(1) }}</h2>
-<small>All time</small>
-</div>
-<div class="stat-icon"><i class="fas fa-clock"></i></div>
-</div>
+<div class="dt-metric-card fade-in-up delay-1">
+<div class="dt-metric-chip chip-study"><i class="fas fa-clock"></i></div>
+<div class="dt-metric-label">Total Hours</div>
+<div class="dt-metric-val"><span data-count-up="{{ total_hours|round(1) }}" data-count-decimals="1" data-count-duration="1200">0</span></div>
+<div class="dt-metric-sub">All time</div>
 </div>
 </div>
 <div class="col-6 col-md-3">
-<div class="metric-card" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-<div class="d-flex justify-content-between">
-<div>
-<h5>Avg Productivity</h5>
-<h2>{{ avg_productivity|round(1) }}%</h2>
-<small>Last sessions</small>
-</div>
-<div class="stat-icon"><i class="fas fa-bolt"></i></div>
-</div>
+<div class="dt-metric-card fade-in-up delay-2">
+<div class="dt-metric-chip chip-ai"><i class="fas fa-bolt"></i></div>
+<div class="dt-metric-label">Avg Productivity</div>
+<div class="dt-metric-val"><span data-count-up="{{ avg_productivity|round(1) }}" data-count-decimals="1" data-count-duration="1200">0</span>%</div>
+<div class="dt-metric-sub">Last sessions</div>
 </div>
 </div>
 <div class="col-6 col-md-3">
-<div class="metric-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a202c;">
-<div class="d-flex justify-content-between">
-<div>
-<h5>Study Streak</h5>
-<h2>{{ study_streak }} days</h2>
-<small>Consecutive</small>
-</div>
-<div class="stat-icon"><i class="fas fa-fire" style="color: #e53e3e;"></i></div>
-</div>
+<div class="dt-metric-card fade-in-up delay-3">
+<div class="dt-metric-chip chip-danger"><i class="fas fa-fire"></i></div>
+<div class="dt-metric-label">Study Streak</div>
+<div class="dt-metric-val"><span data-count-up="{{ study_streak }}" data-count-duration="800">0</span> <span style="font-size:1rem;font-weight:500;">days</span></div>
+<div class="dt-metric-sub">Consecutive</div>
 </div>
 </div>
 <div class="col-6 col-md-3">
-<div class="metric-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-<div class="d-flex justify-content-between">
-<div>
-<h5>Predicted GPA</h5>
-<h2>{{ gpa.gpa }}</h2>
-<small>/ 4.0</small>
-</div>
-<div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
-</div>
+<div class="dt-metric-card fade-in-up delay-4">
+<div class="dt-metric-chip chip-success"><i class="fas fa-graduation-cap"></i></div>
+<div class="dt-metric-label">Predicted GPA</div>
+<div class="dt-metric-val"><span data-count-up="{{ gpa.gpa }}" data-count-decimals="2" data-count-duration="1200">0</span></div>
+<div class="dt-metric-sub">/ 4.0</div>
 </div>
 </div>
 </div>
@@ -192,8 +48,8 @@ Productivity</h3>
 <div class="row g-3">
 <div class="col-lg-4">
 <!-- Log Study Session -->
-<div class="card card-custom mb-3">
-<div class="card-header-custom">
+<div class="dt-glass-card mb-3">
+<div class="card-header border-bottom-0 bg-transparent fw-bold">
 <i class="fas fa-plus-circle text-success me-1"></i> Log Study Session
 </div>
 <div class="card-body">
@@ -214,15 +70,15 @@ Productivity</h3>
 <label class="form-label small fw-bold">Productivity (0–100)</label>
 <input type="number" name="productivity" min="0" max="100" class="form-control" value="75" required>
 </div>
-<button type="submit" class="btn btn-primary-custom">
+<button type="submit" class="btn btn-primary rounded-pill px-4">
 <i class="fas fa-save me-1"></i> Log Session
 </button>
 </form>
 </div>
 </div>
 <!-- GPA Prediction Card -->
-<div class="card card-custom">
-<div class="card-header-custom">
+<div class="dt-glass-card">
+<div class="card-header border-bottom-0 bg-transparent fw-bold">
 <i class="fas fa-chart-line text-info me-1"></i> GPA Prediction
 </div>
 <div class="card-body">
@@ -254,15 +110,19 @@ Based on your study hours and productivity trends.
 <!-- Chart Row -->
 <div class="row g-3">
 <div class="col-md-6">
-<div class="chart-container">
-<h6 class="fw-bold mb-1" style="font-size: 0.85rem;"><i class="fas fa-calendar-day text-primary me-1"></i> Daily Study Hours</h6>
+<div class="dt-glass-card h-100">
+<div class="p-3">
+<h6 class="fw-bold mb-2" style="font-size: 0.85rem;"><i class="fas fa-calendar-day text-primary me-1"></i> Daily Study Hours</h6>
 <canvas id="studyTrendChart" height="150"></canvas>
 </div>
 </div>
+</div>
 <div class="col-md-6">
-<div class="chart-container">
-<h6 class="fw-bold mb-1" style="font-size: 0.85rem;"><i class="fas fa-chart-bar text-success me-1"></i> Productivity Trend</h6>
+<div class="dt-glass-card h-100">
+<div class="p-3">
+<h6 class="fw-bold mb-2" style="font-size: 0.85rem;"><i class="fas fa-chart-bar text-success me-1"></i> Productivity Trend</h6>
 <canvas id="productivityChart" height="150"></canvas>
+</div>
 </div>
 </div>
 </div>
@@ -270,15 +130,16 @@ Based on your study hours and productivity trends.
 <div class="row g-3 mt-1">
 {% if subjects %}
 <div class="col-md-5">
-<div class="chart-container">
-<h6 class="fw-bold mb-1" style="font-size: 0.85rem;"><i class="fas fa-pie-chart text-warning me-1"></i> Hours by Subject</h6>
+<div class="dt-glass-card h-100">
+<div class="p-3">
+<h6 class="fw-bold mb-2" style="font-size: 0.85rem;"><i class="fas fa-pie-chart text-warning me-1"></i> Hours by Subject</h6>
 <canvas id="subjectPieChart" height="150"></canvas>
 </div>
-
+</div>
 </div>
 {% endif %}
 <div class="col-md-7">
-<div class="card card-custom">
+<div class="dt-glass-card">
 <div class="card-header-custom d-flex justify-content-between align-items-center">
 <span><i class="fas fa-list-ul text-primary me-1"></i> Recent Logs</span>
 <span class="badge bg-light text-dark">{{ logs|length }} entries</span>
@@ -374,7 +235,7 @@ onsubmit="return confirm('Delete this study log?');">
 </div>
 <div class="modal-footer">
 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-<button type="submit" class="btn btn-primary-custom" style="width:auto;">
+<button type="submit" class="btn btn-primary rounded-pill px-4" style="width:auto;">
 <i class="fas fa-save me-1"></i> Update
 </button>
 </div>
@@ -385,6 +246,12 @@ onsubmit="return confirm('Delete this study log?');">
 {% endblock %}
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function gridColor() { return isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'; }
+function tickColor() { return isDark() ? '#9ca3af' : '#6b7280'; }
+function chartBorderColor() { return isDark() ? '#1e2232' : '#ffffff'; }
+</script>
 <!-- Populate edit modal -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -425,8 +292,8 @@ maintainAspectRatio: true,
 aspectRatio: 1.8,
 plugins: { legend: { display: false } },
 scales: {
-y: { beginAtZero: true, grid: { color: '#e9ecef' }, ticks: { font: { size: 8 } } },
-x: { grid: { display: false }, ticks: { font: { size: 8 } } }
+y: { beginAtZero: true, grid: { color: gridColor() }, ticks: { font: { size: 8 }, color: tickColor() } },
+x: { grid: { display: false }, ticks: { font: { size: 8 }, color: tickColor() } }
 }
 }
 });
@@ -458,8 +325,8 @@ maintainAspectRatio: true,
 aspectRatio: 1.8,
 plugins: { legend: { display: false } },
 scales: {
-y: { beginAtZero: true, max: 100, grid: { color: '#e9ecef' }, ticks: { font: { size: 8 } } },
-x: { grid: { display: false }, ticks: { font: { size: 8 } } }
+y: { beginAtZero: true, max: 100, grid: { color: gridColor() }, ticks: { font: { size: 8 }, color: tickColor() } },
+x: { grid: { display: false }, ticks: { font: { size: 8 }, color: tickColor() } }
 }
 }
 });

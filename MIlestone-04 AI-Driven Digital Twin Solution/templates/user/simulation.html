@@ -2,30 +2,30 @@
 {% block extra_css %}
 <style>
 .sim-wrapper {
-  background: #f7fafc;
-  border-radius: 20px;
-  padding: 1rem;
+  background: transparent;
+  padding: 0;
 }
 .card-custom {
-  border: none;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: var(--card-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--card-shadow) !important;
+  background: var(--bg-surface) !important;
   overflow: hidden;
 }
 .card-header-custom {
   background: transparent;
   font-weight: 600;
   padding: 0.8rem 1.2rem;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border-color);
   font-size: 0.95rem;
+  color: var(--text-primary);
 }
 .form-control, .form-select {
   border-radius: 10px;
-  border: 1.5px solid #e2e8f0;
   transition: border-color 0.2s;
 }
 .form-control:focus, .form-select:focus {
-  border-color: #667eea;
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
 }
 .btn-simulate {
@@ -44,30 +44,44 @@
   color: white;
 }
 .result-card {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border-radius: 16px;
-  padding: 1.5rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%);
+  color: #ffffff !important;
+  border-radius: 18px;
+  padding: 1.6rem;
   min-height: 260px;
+  box-shadow: 0 12px 32px rgba(79, 70, 229, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  position: relative;
+  overflow: hidden;
 }
 .result-card h4 {
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  color: #ffffff !important;
+  font-size: 1.35rem;
+  letter-spacing: -0.3px;
 }
-.result-card .stat-item {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-.result-card .stat-item:last-child {
-  border-bottom: none;
+.result-card .stat-box-inner {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  backdrop-filter: blur(8px);
+  height: 100%;
 }
 .result-card .stat-label {
-  opacity: 0.8;
-  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.3rem;
 }
 .result-card .stat-value {
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #ffffff !important;
+  line-height: 1.3;
 }
 .empty-state {
   text-align: center;
@@ -79,29 +93,55 @@
   margin-bottom: 1rem;
 }
 .risk-badge {
-  padding: 0.25rem 1rem;
+  padding: 0.3rem 0.9rem;
   border-radius: 50px;
-  font-weight: 600;
-  font-size: 0.8rem;
-  display: inline-block;
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  letter-spacing: 0.3px;
 }
-.risk-low    { background: #48bb78; color: white; }
-.risk-medium { background: #ed8936; color: white; }
-.risk-high   { background: #fc8181; color: white; }
+.risk-low    { background: rgba(34, 197, 94, 0.25); color: #4ade80 !important; border: 1px solid rgba(34, 197, 94, 0.4); }
+.risk-medium { background: rgba(245, 158, 11, 0.25); color: #fbbf24 !important; border: 1px solid rgba(245, 158, 11, 0.4); }
+.risk-high   { background: rgba(239, 68, 68, 0.25); color: #f87171 !important; border: 1px solid rgba(239, 68, 68, 0.4); }
+.sim-comp-box {
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  backdrop-filter: blur(6px);
+}
+.sim-comp-box .comp-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.7) !important;
+  margin-bottom: 0.2rem;
+}
+.sim-comp-box .comp-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff !important;
+}
 .comparison-bar {
-  height: 8px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.2);
+  height: 10px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  margin-top: 0.3rem;
+  margin-top: 0.4rem;
   display: flex;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .comparison-bar .bar-segment {
   height: 100%;
   transition: width 0.6s ease;
+  border-radius: 10px;
 }
-.bar-current  { background: rgba(255,255,255,0.6); }
-.bar-projected { background: #48bb78; }
+.bar-current  { background: rgba(255, 255, 255, 0.55); }
+.bar-projected { background: linear-gradient(90deg, #10b981, #34d399); }
 .scenario-icon { font-size: 2rem; margin-right: 0.5rem; }
 
 /* History styles */
@@ -113,13 +153,13 @@
 .history-list::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
 .history-item {
   padding: 0.6rem 0;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border-color);
 }
 .history-item:last-child { border-bottom: none; }
 .history-item .badge-scenario {
   font-weight: 500;
-  background: #edf2f7;
-  color: #2d3748;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
   padding: 0.2rem 0.6rem;
   border-radius: 30px;
   font-size: 0.75rem;
@@ -127,38 +167,97 @@
 
 /* Report section */
 .report-section {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
+  background: var(--bg-surface);
+  color: var(--text-primary, #111827);
+  border-radius: 18px;
+  padding: 1.6rem;
   margin-top: 2rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
+[data-theme="dark"] .report-section {
+  background: var(--bg-card, #1e1e2d);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
 .report-section .stat-card {
-  background: #f7fafc;
-  border-radius: 12px;
-  padding: 1rem;
+  background: var(--bg-elevated, #f8fafc);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 1.1rem 0.8rem;
   text-align: center;
   height: 100%;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
+.report-section .stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+[data-theme="dark"] .report-section .stat-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .report-section .stat-card .number {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #667eea;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #6366f1;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  margin-bottom: 0.2rem;
 }
 .report-section .stat-card .label {
-  color: #718096;
-  font-size: 0.8rem;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
+
 .report-table {
   max-height: 400px;
   overflow-y: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
 }
+[data-theme="dark"] .report-table {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.report-table table {
+  margin-bottom: 0;
+}
+
 .report-table th {
-  background: #f7fafc;
-  font-weight: 600;
-  font-size: 0.8rem;
+  background: var(--bg-elevated, #f1f5f9);
+  color: var(--text-secondary, #475569);
+  font-weight: 700;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08));
+}
+[data-theme="dark"] .report-table th {
+  background: rgba(255, 255, 255, 0.05);
+  color: #9ca3af;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.report-table td {
+  color: var(--text-primary, #1e293b);
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+  font-size: 0.85rem;
+}
+[data-theme="dark"] .report-table td {
+  color: #e2e8f0;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+[data-theme="dark"] .report-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
 }
 </style>
 {% endblock %}
@@ -166,9 +265,9 @@
 {% block content %}
 <div class="sim-wrapper">
   <!-- ===== HEADER ===== -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fw-bold mb-0"><i class="fas fa-robot text-primary me-2"></i>Future Simulation</h3>
-    <span class="badge bg-light text-dark">What-if Analysis</span>
+  <div class="page-section-header mb-3">
+    <h3 class="fw-bold mb-0"><i class="fas fa-robot me-2" style="color:var(--color-ai);"></i>Future Simulation</h3>
+    <span class="badge" style="background:rgba(168,85,247,0.15);color:var(--color-ai);border:1px solid rgba(168,85,247,0.25);font-size:0.8rem;padding:0.3rem 0.8rem;border-radius:30px;">What-if Analysis</span>
   </div>
 
   <div class="row g-4">
@@ -247,26 +346,26 @@
       <!-- Result -->
       {% if result %}
       <div class="result-card">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-2">
             {% set icon_map = {'save': '💰', 'invest': '📈', 'spend': '🛍️', 'study_more': '📚', 'exercise': '🏃'} %}
-            <span class="scenario-icon">{{ icon_map.get(result.scenario, '🔮') }}</span>
-            <h4>{{ result.desc }}</h4>
+            <span class="scenario-icon" style="font-size: 1.8rem; margin-right: 0.3rem;">{{ icon_map.get(result.scenario, '🔮') }}</span>
+            <h4 class="m-0">{{ result.desc }}</h4>
           </div>
           <span class="risk-badge risk-{{ result.risk|lower }}">
             {{ result.risk }} Risk
           </span>
         </div>
 
-        <div class="row g-3 mt-2">
+        <div class="row g-3 mt-1">
           <div class="col-md-6">
-            <div class="stat-item">
+            <div class="stat-box-inner">
               <div class="stat-label">📊 Projected Impact</div>
               <div class="stat-value">{{ result.impact }}</div>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="stat-item">
+            <div class="stat-box-inner">
               <div class="stat-label">💡 Recommendation</div>
               <div class="stat-value">{{ result.rec }}</div>
             </div>
@@ -277,9 +376,9 @@
         <div class="mt-3">
           <div class="row g-2">
             <div class="col-6">
-              <div class="bg-white bg-opacity-10 p-2 rounded">
-                <div class="small">Current</div>
-                <div class="fw-bold">
+              <div class="sim-comp-box">
+                <div class="comp-label">Current</div>
+                <div class="comp-val">
                   {% if result.scenario in ['save','invest','spend'] %}
                     ₹{{ result.current|round(0)|int if result.current is number else result.current }}
                   {% elif result.scenario == 'study_more' %}
@@ -293,9 +392,9 @@
               </div>
             </div>
             <div class="col-6">
-              <div class="bg-white bg-opacity-20 p-2 rounded">
-                <div class="small">Projected</div>
-                <div class="fw-bold">
+              <div class="sim-comp-box">
+                <div class="comp-label">Projected</div>
+                <div class="comp-val">
                   {% if result.scenario in ['save','invest','spend'] %}
                     ₹{{ result.projected|round(0)|int if result.projected is number else result.projected }}
                   {% elif result.scenario == 'study_more' %}
@@ -313,7 +412,7 @@
 
         <!-- Visual Comparison Bar -->
         <div class="mt-3">
-          <div class="d-flex justify-content-between small">
+          <div class="d-flex justify-content-between text-white-50" style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
             <span>Current</span>
             <span>Projected</span>
           </div>
@@ -392,23 +491,24 @@
       <!-- ===== REPORT SECTION (always visible) ===== -->
       <div class="report-section mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold mb-0"><i class="fas fa-file-alt text-primary me-2"></i>Detailed Report</h5>
-          <span class="badge bg-light text-dark">{{ history|length }} total</span>
+          <h5 class="fw-bold mb-0" style="color: var(--text-primary);"><i class="fas fa-file-alt text-primary me-2"></i>Detailed Report</h5>
+          <span class="badge" style="background: var(--bg-elevated, rgba(255,255,255,0.08)); color: var(--text-primary); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); font-size: 0.75rem;">{{ history|length }} total</span>
         </div>
 
         {% if history %}
         {% set total_simulations = history|length %}
         {% set scenarios = {} %}
-        {% set avg_amounts = {} %}
+        {% set sum_amounts = {} %}
         {% set risk_counts = {'Low':0, 'Medium':0, 'High':0} %}
         {% for entry in history %}
           {% set s = entry.scenario %}
+          {% set amt = entry.amount|float if entry.amount is number else 0.0 %}
           {% if s in scenarios %}
             {% set _ = scenarios.update({s: scenarios[s] + 1}) %}
-            {% set _ = avg_amounts.update({s: avg_amounts[s] + [entry.amount]}) %}
+            {% set _ = sum_amounts.update({s: sum_amounts[s] + amt}) %}
           {% else %}
             {% set _ = scenarios.update({s: 1}) %}
-            {% set _ = avg_amounts.update({s: [entry.amount]}) %}
+            {% set _ = sum_amounts.update({s: amt}) %}
           {% endif %}
           {% if entry.result_risk == 'Low' %}
             {% set _ = risk_counts.update({'Low': risk_counts.Low + 1}) %}
@@ -451,15 +551,23 @@
         <!-- Charts row -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <div class="bg-light p-3 rounded-3">
-              <h6 class="fw-bold mb-2"><i class="fas fa-chart-pie text-primary me-1"></i> Scenario Distribution</h6>
-              <canvas id="scenarioChart" height="180"></canvas>
+            <div class="glass-card p-3 h-100">
+              <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" style="font-size: 0.88rem; color: var(--text-primary);">
+                <i class="fas fa-chart-pie text-primary"></i> Scenario Distribution
+              </h6>
+              <div style="position: relative; width: 100%; height: 210px;">
+                <canvas id="scenarioChart"></canvas>
+              </div>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="bg-light p-3 rounded-3">
-              <h6 class="fw-bold mb-2"><i class="fas fa-chart-bar text-info me-1"></i> Total Amount / Scenario</h6>
-              <canvas id="amountChart" height="180"></canvas>
+            <div class="glass-card p-3 h-100">
+              <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" style="font-size: 0.88rem; color: var(--text-primary);">
+                <i class="fas fa-chart-bar text-info"></i> Total Amount / Scenario
+              </h6>
+              <div style="position: relative; width: 100%; height: 210px;">
+                <canvas id="amountChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -502,7 +610,13 @@
 </div>
 
 <!-- ===== SCRIPTS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function gridColor() { return isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'; }
+function tickColor() { return isDark() ? '#9ca3af' : '#6b7280'; }
+function chartBorderColor() { return isDark() ? '#1e2232' : '#ffffff'; }
+
 // Dynamic form
 const scenarioSelect = document.getElementById('scenarioSelect');
 const descEl    = document.getElementById('scenario-desc');
@@ -538,52 +652,80 @@ updateForm();
 
 // Chart.js – only if history exists
 {% if history %}
-const scenarioLabels = {{ scenarios.keys()|map('replace', '_', ' ')|map('title')|list|tojson }};
-const scenarioCounts = {{ scenarios.values()|list|tojson }};
-const amountLabels   = {{ avg_amounts.keys()|map('replace', '_', ' ')|map('title')|list|tojson }};
-const amountTotals   = {{ avg_amounts.values()|map('sum')|map('round', 0)|list|tojson }};
+document.addEventListener('DOMContentLoaded', function() {
+  const rawScenarioLabels = {{ scenarios.keys()|list|tojson }};
+  const scenarioLabels    = rawScenarioLabels.map(s => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+  const scenarioCounts    = {{ scenarios.values()|list|tojson }};
 
-// Scenario Distribution Doughnut
-const ctx1 = document.getElementById('scenarioChart').getContext('2d');
-new Chart(ctx1, {
-  type: 'doughnut',
-  data: {
-    labels: scenarioLabels,
-    datasets: [{
-      data: scenarioCounts,
-      backgroundColor: ['#667eea', '#f093fb', '#43e97b', '#4facfe', '#f5576c'],
-      borderWidth: 2,
-      borderColor: '#fff'
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1.5,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
-    cutout: '60%'
+  const rawAmountLabels   = {{ sum_amounts.keys()|list|tojson }};
+  const amountLabels      = rawAmountLabels.map(s => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+  const amountTotals      = {{ sum_amounts.values()|map('round', 0)|map('int')|list|tojson }};
+
+  const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor   = isDarkTheme ? '#9ca3af' : '#4b5563';
+  const gridColor   = isDarkTheme ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+
+  // Scenario Distribution Doughnut
+  const ctx1 = document.getElementById('scenarioChart');
+  if (ctx1 && typeof Chart !== 'undefined') {
+    new Chart(ctx1.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: scenarioLabels,
+        datasets: [{
+          data: scenarioCounts,
+          backgroundColor: ['#6366f1', '#ec4899', '#10b981', '#06b6d4', '#f59e0b'],
+          borderWidth: 2,
+          borderColor: isDarkTheme ? '#1e1e2d' : '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 12, padding: 12, color: textColor, font: { size: 11, weight: '600' } }
+          }
+        },
+        cutout: '65%'
+      }
+    });
   }
-});
 
-// Average Amount Bar
-const ctx2 = document.getElementById('amountChart').getContext('2d');
-new Chart(ctx2, {
-  type: 'bar',
-  data: {
-    labels: amountLabels,
-    datasets: [{
-      label: 'Total Amount',
-      data: amountTotals,
-      backgroundColor: ['#667eea', '#f093fb', '#43e97b', '#4facfe', '#f5576c'],
-      borderRadius: 6,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1.5,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, grid: { color: '#e9ecef' } } }
+  // Total Amount Bar
+  const ctx2 = document.getElementById('amountChart');
+  if (ctx2 && typeof Chart !== 'undefined') {
+    new Chart(ctx2.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: amountLabels,
+        datasets: [{
+          label: 'Total Amount',
+          data: amountTotals,
+          backgroundColor: ['#6366f1', '#ec4899', '#10b981', '#06b6d4', '#f59e0b'],
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            ticks: { color: textColor, font: { size: 10, weight: '600' } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: textColor, font: { size: 10 } },
+            grid: { color: gridColor }
+          }
+        }
+      }
+    });
   }
 });
 {% endif %}

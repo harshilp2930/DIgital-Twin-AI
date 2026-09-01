@@ -27,22 +27,35 @@ def utility_processor():
     return dict(datetime=datetime)
 
 # ------------------------- Gemini AI Setup -------------------------
-try:
-    import google.generativeai as genai
-    GEMINI_AVAILABLE = True
-except ImportError:
-    GEMINI_AVAILABLE = False
-    print("Warning: google-generativeai not installed. Install with: pip install google-generativeai")
-
+ai_client = None
+gemini_model = None
+GEMINI_AVAILABLE = False
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-if GEMINI_AVAILABLE and GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-2.5-flash')
-    print("Gemini initialized successfully.")
-else:
-    gemini_model = None
-    if not GEMINI_API_KEY:
-        print("Warning: GEMINI_API_KEY not set. Assistant will use rule-based responses.")
+
+# Try new official google.genai SDK
+try:
+    from google import genai
+    if GEMINI_API_KEY:
+        ai_client = genai.Client(api_key=GEMINI_API_KEY)
+        GEMINI_AVAILABLE = True
+        print("Gemini AI client (google-genai) initialized successfully.")
+except ImportError:
+    pass
+
+# Fallback to legacy google.generativeai SDK if new SDK not available
+if not ai_client:
+    try:
+        import google.generativeai as genai_legacy
+        if GEMINI_API_KEY:
+            genai_legacy.configure(api_key=GEMINI_API_KEY)
+            gemini_model = genai_legacy.GenerativeModel('gemini-1.5-flash')
+            GEMINI_AVAILABLE = True
+            print("Gemini AI legacy model initialized successfully.")
+    except Exception as e:
+        print(f"Warning: Gemini initialization note: {e}")
+
+if not GEMINI_API_KEY:
+    print("Warning: GEMINI_API_KEY not set in environment. Assistant will use rule-based fallback responses.")
 
 # ------------------------- Database Models -------------------------
 class User(UserMixin, db.Model):
@@ -111,6 +124,21 @@ class ChatMessage(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref='chat_messages')
+
+class SimulationHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    scenario = db.Column(db.String(50), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    result_desc = db.Column(db.String(200))
+    result_impact = db.Column(db.String(300))
+    result_risk = db.Column(db.String(20))
+    result_rec = db.Column(db.String(200))
+    projected = db.Column(db.Float)   # Added from GitHub: projected future value
+    current = db.Column(db.Float)     # Added from GitHub: current baseline value
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='simulation_history')
 # ------------------------- Helper Functions -------------------------
 def generate_forecast(data, periods=6):
     if len(data) < 2:
@@ -148,34 +176,41 @@ def predict_gpa(user):
     return {'gpa': round(gpa, 2), 'efficiency': round(avg_prod, 1), 'recommendation': rec}
 
 def simulate_scenario(user, action, amount):
+    try:
+        amt_val = float(amount)
+        amt_str = f"{int(amt_val):,}" if amt_val.is_integer() else f"{amt_val:,.2f}"
+    except (ValueError, TypeError):
+        amt_val = 0
+        amt_str = "0"
+
     scenarios = {
         'save': {
-            'desc': f'Save ₹{amount:,} monthly',
-            'impact': f'Your savings grow to ₹{user.savings + amount*12:,.0f} in 1 year.',
+            'desc': f'Save ₹{amt_str} monthly',
+            'impact': f'Your savings grow to ₹{user.savings + amt_val*12:,.0f} in 1 year.',
             'risk': 'Low',
             'rec': 'Great for long-term security'
         },
         'invest': {
-            'desc': f'Invest ₹{amount:,} monthly',
-            'impact': f'With 10% returns, investment grows to ₹{amount*12*1.1:,.0f} in 1 year.',
+            'desc': f'Invest ₹{amt_str} monthly',
+            'impact': f'With 10% returns, investment grows to ₹{amt_val*12*1.1:,.0f} in 1 year.',
             'risk': 'Medium',
             'rec': 'Balanced approach for growth'
         },
         'spend': {
-            'desc': f'Spend ₹{amount:,} monthly extra',
-            'impact': f'Your savings reduce to ₹{user.savings - amount*12:,.0f} in 1 year.',
+            'desc': f'Spend ₹{amt_str} monthly extra',
+            'impact': f'Your savings reduce to ₹{user.savings - amt_val*12:,.0f} in 1 year.',
             'risk': 'High',
             'rec': 'Consider reducing discretionary spending'
         },
         'study_more': {
-            'desc': f'Study {amount} more hours per week',
-            'impact': f'Your GPA could increase by {amount*0.1:.2f} points.',
+            'desc': f'Study {amt_str} more hours per week',
+            'impact': f'Your GPA could increase by {amt_val*0.1:.2f} points.',
             'risk': 'Low',
             'rec': 'Consistent effort yields results'
         },
         'exercise': {
-            'desc': f'Exercise {amount} minutes daily',
-            'impact': f'You could burn {amount*30*30:,.0f} calories monthly.',
+            'desc': f'Exercise {amt_str} minutes daily',
+            'impact': f'You could burn {amt_val*30*30:,.0f} calories monthly.',
             'risk': 'Low',
             'rec': 'Great for overall health'
         }
@@ -205,7 +240,7 @@ def create_default_admin():
 # ------------------------- Routes -------------------------
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 @app.route('/')
 def index():
@@ -219,19 +254,19 @@ def register():
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
         if not username or not email or not password:
-            flash('All fields are required.')
+            flash('All fields are required.', 'warning')
             return redirect(url_for('register'))
         if password != confirm_password:
-            flash('Passwords do not match.')
+            flash('Passwords do not match.', 'warning')
             return redirect(url_for('register'))
         if len(password) < 8:
-            flash('Password must be at least 8 characters.')
+            flash('Password must be at least 8 characters.', 'warning')
             return redirect(url_for('register'))
         if User.query.filter_by(username=username).first():
-            flash('Username already exists.')
+            flash('Username already exists.', 'danger')
             return redirect(url_for('register'))
         if User.query.filter_by(email=email).first():
-            flash('Email already registered.')
+            flash('Email already registered.', 'danger')
             return redirect(url_for('register'))
         user = User(username=username, email=email)
         user.set_password(password)
@@ -240,7 +275,7 @@ def register():
         #     user.is_admin = True
         db.session.add(user)
         db.session.commit()
-        flash('Registration successful! Please log in.')
+        flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -250,13 +285,15 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         if not username or not password:
-            flash('Please enter both username and password.')
-            return render_template('login.html')
+            flash('Please enter both username and password.', 'warning')
+            return redirect(url_for('login'))
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for('admin_dashboard' if user.is_admin else 'user_dashboard'))
-        flash('Invalid username or password.')
+            if user.is_admin:
+                return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('user_dashboard'))
+        flash('Invalid username or password.', 'danger')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -473,14 +510,36 @@ def user_financial():
 
 
     if request.method == 'POST':
-        date = datetime.strptime(request.form['date'], '%Y-%m-%d')
-        category = request.form['category']
-        amount = float(request.form['amount'])
-        trans_type = request.form['type']
+        # --- Input validation ---
+        try:
+            date = datetime.strptime(request.form['date'], '%Y-%m-%d')
+        except (ValueError, KeyError):
+            flash('Invalid date format. Please select a valid date.', 'warning')
+            return redirect(url_for('user_financial'))
+
+        category = request.form.get('category', '').strip()
+        if not category:
+            flash('Please select a transaction category.', 'warning')
+            return redirect(url_for('user_financial'))
+
+        try:
+            amount = float(request.form.get('amount', 0))
+            if amount <= 0:
+                flash('Amount must be greater than zero.', 'warning')
+                return redirect(url_for('user_financial'))
+        except ValueError:
+            flash('Please enter a valid numeric amount.', 'warning')
+            return redirect(url_for('user_financial'))
+
+        trans_type = request.form.get('type', '').strip()
+        if trans_type not in ('income', 'expense'):
+            flash('Invalid transaction type.', 'warning')
+            return redirect(url_for('user_financial'))
+
         tx = Transaction(user_id=current_user.id, date=date, category=category, amount=amount, type=trans_type)
         db.session.add(tx)
         db.session.commit()
-        flash('Transaction added.')
+        flash('Transaction added successfully.', 'success')
         return redirect(url_for('user_financial'))
 
     transactions = current_user.transactions
@@ -557,15 +616,44 @@ def user_study():
 
 
     if request.method == 'POST':
-        date = datetime.strptime(request.form['date'], '%Y-%m-%d')
-        hours = float(request.form['hours'])
-        subject = request.form['subject']
-        productivity = int(request.form['productivity'])
+        # --- Input validation ---
+        try:
+            date = datetime.strptime(request.form['date'], '%Y-%m-%d')
+        except (ValueError, KeyError):
+            flash('Invalid date format. Please select a valid date.', 'warning')
+            return redirect(url_for('user_study'))
+
+        try:
+            hours = float(request.form.get('hours', 0))
+            if hours <= 0:
+                flash('Study hours must be greater than zero.', 'warning')
+                return redirect(url_for('user_study'))
+            if hours > 24:
+                flash('Study hours cannot exceed 24 hours per day.', 'warning')
+                return redirect(url_for('user_study'))
+        except ValueError:
+            flash('Please enter a valid number for study hours.', 'warning')
+            return redirect(url_for('user_study'))
+
+        subject = request.form.get('subject', '').strip()
+        if not subject:
+            flash('Please enter the subject name.', 'warning')
+            return redirect(url_for('user_study'))
+
+        try:
+            productivity = int(request.form.get('productivity', 0))
+            if not (1 <= productivity <= 100):
+                flash('Productivity score must be between 1 and 100.', 'warning')
+                return redirect(url_for('user_study'))
+        except ValueError:
+            flash('Please enter a valid productivity score.', 'warning')
+            return redirect(url_for('user_study'))
+
         log = StudyLog(user_id=current_user.id, date=date, hours=hours, subject=subject,
                        productivity_score=productivity)
         db.session.add(log)
         db.session.commit()
-        flash('Study session logged.')
+        flash('Study session logged successfully.', 'success')
         return redirect(url_for('user_study'))
 
     logs = current_user.study_logs
@@ -674,15 +762,44 @@ def user_fitness():
 
 
     if request.method == 'POST':
-        date = datetime.strptime(request.form['date'], '%Y-%m-%d')
-        activity = request.form['activity']
-        duration = int(request.form['duration'])
-        calories = int(request.form['calories'])
+        # --- Input validation ---
+        try:
+            date = datetime.strptime(request.form['date'], '%Y-%m-%d')
+        except (ValueError, KeyError):
+            flash('Invalid date format. Please select a valid date.', 'warning')
+            return redirect(url_for('user_fitness'))
+
+        activity = request.form.get('activity', '').strip()
+        if not activity:
+            flash('Please select or enter an activity type.', 'warning')
+            return redirect(url_for('user_fitness'))
+
+        try:
+            duration = int(request.form.get('duration', 0))
+            if duration <= 0:
+                flash('Duration must be greater than zero minutes.', 'warning')
+                return redirect(url_for('user_fitness'))
+            if duration > 1440:
+                flash('Duration cannot exceed 1440 minutes (24 hours).', 'warning')
+                return redirect(url_for('user_fitness'))
+        except ValueError:
+            flash('Please enter a valid number for duration.', 'warning')
+            return redirect(url_for('user_fitness'))
+
+        try:
+            calories = int(request.form.get('calories', 0))
+            if calories < 0:
+                flash('Calories burned cannot be negative.', 'warning')
+                return redirect(url_for('user_fitness'))
+        except ValueError:
+            flash('Please enter a valid number for calories burned.', 'warning')
+            return redirect(url_for('user_fitness'))
+
         log = FitnessLog(user_id=current_user.id, date=date, activity=activity,
                          duration_min=duration, calories_burned=calories)
         db.session.add(log)
         db.session.commit()
-        flash('Fitness activity logged.')
+        flash('Fitness activity logged successfully!', 'success')
         return redirect(url_for('user_fitness'))
 
     logs = current_user.fitness_logs
@@ -690,8 +807,9 @@ def user_fitness():
     # --- Basic metrics ---
     total_min = sum(l.duration_min for l in logs)
     total_cal = sum(l.calories_burned for l in logs)
-    avg_min_per_day = total_min / max(1,
-                                      (datetime.now().date() - (logs[0].date if logs else datetime.now().date())).days)
+    earliest_date = min((l.date for l in logs), default=datetime.now().date())
+    days_since_start = max(1, (datetime.now().date() - earliest_date).days)
+    avg_min_per_day = total_min / days_since_start
 
     # --- Weekly progress (current week: Monday–Sunday) ---
     today = datetime.now().date()
@@ -747,6 +865,44 @@ def user_fitness():
                            activity_minutes=activity_minutes,
                            streak=streak)
 
+@app.route('/user/fitness/edit', methods=['POST'])
+@login_required
+def edit_fitness_log():
+    log_id = request.form.get('id')
+    log = FitnessLog.query.get_or_404(log_id)
+    if log.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('user_fitness'))
+    try:
+        log.date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
+        log.activity = request.form['activity']
+        log.duration_min = int(request.form['duration'])
+        log.calories_burned = int(request.form['calories'])
+        db.session.commit()
+        flash('Fitness log updated successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating fitness log: {str(e)}', 'danger')
+    return redirect(url_for('user_fitness'))
+
+
+@app.route('/user/fitness/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_fitness_log(id):
+    log = FitnessLog.query.get_or_404(id)
+    if log.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('user_fitness'))
+    try:
+        db.session.delete(log)
+        db.session.commit()
+        flash('Fitness log deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting fitness log: {str(e)}', 'danger')
+    return redirect(url_for('user_fitness'))
+
+
 @app.route('/user/simulation', methods=['GET', 'POST'])
 @login_required
 def user_simulation():
@@ -759,10 +915,26 @@ def user_simulation():
     }
 
     if request.method == 'POST':
-        scenario = request.form['scenario']
-        amount = float(request.form['amount'])
+        # --- Input validation ---
+        scenario = request.form.get('scenario', '').strip()
+        valid_scenarios = ('save', 'invest', 'spend', 'study_more', 'exercise')
+        if scenario not in valid_scenarios:
+            flash('Please select a valid scenario.', 'warning')
+            return redirect(url_for('user_simulation'))
+
+        try:
+            amount = float(request.form.get('amount', 0))
+            if amount <= 0:
+                flash('Amount must be greater than zero to run a simulation.', 'warning')
+                return redirect(url_for('user_simulation'))
+        except ValueError:
+            flash('Please enter a valid numeric amount.', 'warning')
+            return redirect(url_for('user_simulation'))
+
         result = simulate_scenario(current_user, scenario, amount)
-        # Add a projected value for comparison
+        result['scenario'] = scenario
+
+        # Add projected value for comparison
         if scenario == 'save':
             result['projected'] = current_user.savings + amount * 12
             result['current'] = current_user.savings
@@ -773,21 +945,45 @@ def user_simulation():
             result['projected'] = current_user.savings - amount * 12
             result['current'] = current_user.savings
         elif scenario == 'study_more':
-            result['projected'] = 2.0 + (amount / 50) + (predict_gpa(current_user)['efficiency'] / 200)
+            result['projected'] = round(min(4.0, 2.0 + (amount / 50) + (predict_gpa(current_user)['efficiency'] / 200)), 2)
             result['current'] = predict_gpa(current_user)['gpa']
         elif scenario == 'exercise':
             result['projected'] = amount * 30 * 30
             result['current'] = sum(f.duration_min for f in current_user.fitness_logs)
 
+        # Save to history (with projected/current — matches GitHub schema)
+        entry = SimulationHistory(
+            user_id=current_user.id,
+            scenario=scenario,
+            amount=amount,
+            result_desc=result.get('desc', ''),
+            result_impact=result.get('impact', ''),
+            result_risk=result.get('risk', 'Low'),
+            result_rec=result.get('rec', ''),
+            projected=result.get('projected'),
+            current=result.get('current')
+        )
+        db.session.add(entry)
+        db.session.commit()
+
+    history = SimulationHistory.query.filter_by(user_id=current_user.id).order_by(SimulationHistory.timestamp.desc()).all()
+
     return render_template('user/simulation.html',
                            user=current_user,
                            result=result,
-                           current_values=current_values)
+                           current_values=current_values,
+                           history=history)
 
 
 @app.route('/user/assistant', methods=['GET', 'POST'])
 @login_required
 def user_assistant():
+    # Clear chat
+    if request.args.get('clear'):
+        session.pop('last_query', None)
+        session.pop('last_response', None)
+        return redirect(url_for('user_assistant'))
+
     # Load history item
     load_id = request.args.get('load')
     if load_id:
@@ -796,30 +992,57 @@ def user_assistant():
             session['last_query'] = msg.question
             session['last_response'] = msg.response
         else:
-            flash('Message not found.')
+            flash('Message not found.', 'warning')
         return redirect(url_for('user_assistant'))
 
     # Handle new message
     if request.method == 'POST':
         query = request.form.get('query', '').strip()
         if not query:
-            flash('Please enter a question.')
+            flash('Please enter a question.', 'warning')
             return redirect(url_for('user_assistant'))
 
         response = None
 
-        # ---- Try Gemini ----
-        if gemini_model and GEMINI_API_KEY:
-            try:
-                user_data = f"User: {current_user.username}, age {current_user.age}, savings ₹{current_user.savings}"
-                prompt = f"{user_data}\nQuestion: {query}\nAnswer concisely (max 150 words)."
-                gemini_response = gemini_model.generate_content(prompt)
-                response = gemini_response.text.strip()
-                print("Gemini response OK")
-            except Exception as e:
-                print(f"Gemini error: {e}")
-                flash('AI service unavailable. Using fallback.')
-                response = None
+        # ---- Try Gemini AI ----
+        if GEMINI_API_KEY:
+            user_context = (
+                f"User Profile:\n"
+                f"- Name: {current_user.username}\n"
+                f"- Age: {current_user.age}\n"
+                f"- Occupation: {current_user.occupation}\n"
+                f"- Monthly Savings: ₹{current_user.savings}\n"
+                f"- Study Hours/Week: {current_user.study_hours_per_week}\n"
+                f"- Fitness Hours/Week: {current_user.fitness_hours_per_week}\n"
+            )
+            prompt = (
+                f"{user_context}\n"
+                f"User Question: {query}\n\n"
+                f"Provide a helpful, direct, and concise response tailored to this user (max 150 words)."
+            )
+
+            # Option 1: New SDK (google.genai)
+            if ai_client:
+                candidate_models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.0-flash']
+                for m in candidate_models:
+                    try:
+                        res = ai_client.models.generate_content(model=m, contents=prompt)
+                        if res and res.text:
+                            response = res.text.strip()
+                            print(f"Gemini response OK using model {m}")
+                            break
+                    except Exception as err:
+                        print(f"Gemini model {m} attempt notice: {err}")
+
+            # Option 2: Legacy SDK (google.generativeai) fallback
+            if not response and gemini_model:
+                try:
+                    res = gemini_model.generate_content(prompt)
+                    if res and res.text:
+                        response = res.text.strip()
+                        print("Gemini legacy response OK")
+                except Exception as err:
+                    print(f"Gemini legacy model error: {err}")
 
         # ---- Fallback ----
         if not response:
@@ -836,7 +1059,7 @@ def user_assistant():
             elif 'goal' in q:
                 response = "I can help you set SMART goals. What area would you like to focus on?"
             else:
-                response = "I'm your Digital Twin AI. Ask about finances, studies, fitness, or goals!"
+                response = "I'm your LifeLens AI. Ask about finances, studies, fitness, or goals!"
 
         # ---- Final safety ----
         if not response:
@@ -850,7 +1073,7 @@ def user_assistant():
         session['last_query'] = query
         session['last_response'] = response
 
-        print(f"Saved response: {response[:50]}...")  # debug
+        # print(f"Saved response: {response[:50]}...")  # debug
         return redirect(url_for('user_assistant'))
 
     # ---- GET: show chat ----
@@ -872,7 +1095,7 @@ def add_goal():
     target_date_str = request.form.get('target_date', '')
 
     if not description:
-        flash('Goal description is required.')
+        flash('Goal description is required.', 'warning')
         return redirect(url_for('user_dashboard'))
 
     target_date = None
@@ -880,7 +1103,7 @@ def add_goal():
         try:
             target_date = datetime.strptime(target_date_str, '%Y-%m-%d').date()
         except ValueError:
-            flash('Invalid date format.')
+            flash('Invalid date format.', 'warning')
             return redirect(url_for('user_dashboard'))
 
     goal = Goal(
@@ -892,14 +1115,127 @@ def add_goal():
     db.session.add(goal)
     db.session.commit()
 
-    flash('Goal added successfully! 🎯')
+    flash('Goal added successfully! 🎯', 'success')
     return redirect(url_for('user_dashboard'))
+# ------------------------- Settings Route -------------------------
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        age_str = request.form.get('age', '').strip()
+        occupation = request.form.get('occupation', '').strip()
+        income_str = request.form.get('monthly_income', '').strip()
+        expenses_str = request.form.get('monthly_expenses', '').strip()
+        savings_str = request.form.get('savings', '').strip()
+        sleep_str = request.form.get('sleep_hours_per_day', '').strip()
+
+        try:
+            if age_str:
+                age = int(age_str)
+                if not (1 <= age <= 120):
+                    flash('Age must be between 1 and 120.', 'warning')
+                    return redirect(url_for('settings'))
+                current_user.age = age
+        except ValueError:
+            flash('Please enter a valid age.', 'warning')
+            return redirect(url_for('settings'))
+
+        if occupation:
+            current_user.occupation = occupation
+
+        try:
+            if income_str:
+                income = float(income_str)
+                if income < 0:
+                    flash('Monthly income cannot be negative.', 'warning')
+                    return redirect(url_for('settings'))
+                current_user.monthly_income = income
+        except ValueError:
+            flash('Please enter a valid monthly income.', 'warning')
+            return redirect(url_for('settings'))
+
+        try:
+            if expenses_str:
+                expenses = float(expenses_str)
+                if expenses < 0:
+                    flash('Monthly expenses cannot be negative.', 'warning')
+                    return redirect(url_for('settings'))
+                current_user.monthly_expenses = expenses
+        except ValueError:
+            flash('Please enter a valid monthly expenses value.', 'warning')
+            return redirect(url_for('settings'))
+
+        try:
+            if savings_str:
+                savings = float(savings_str)
+                if savings < 0:
+                    flash('Savings cannot be negative.', 'warning')
+                    return redirect(url_for('settings'))
+                current_user.savings = savings
+        except ValueError:
+            flash('Please enter a valid savings amount.', 'warning')
+            return redirect(url_for('settings'))
+
+        try:
+            if sleep_str:
+                sleep = float(sleep_str)
+                if not (0 < sleep <= 24):
+                    flash('Sleep hours must be between 0 and 24.', 'warning')
+                    return redirect(url_for('settings'))
+                current_user.sleep_hours_per_day = sleep
+        except ValueError:
+            flash('Please enter a valid number for sleep hours.', 'warning')
+            return redirect(url_for('settings'))
+
+        db.session.commit()
+        flash('Profile updated successfully! ✅', 'success')
+        return redirect(url_for('settings'))
+
+    return render_template('settings.html', user=current_user)
+
+
+# ------------------------- Goal Management Routes -------------------------
+@app.route('/user/goal/delete/<int:goal_id>', methods=['POST'])
+@login_required
+def delete_goal(goal_id):
+    goal = Goal.query.get_or_404(goal_id)
+    if goal.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('user_dashboard'))
+    try:
+        db.session.delete(goal)
+        db.session.commit()
+        flash('Goal deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting goal: {str(e)}', 'danger')
+    return redirect(url_for('user_dashboard'))
+
+
+@app.route('/user/goal/toggle/<int:goal_id>', methods=['POST'])
+@login_required
+def toggle_goal(goal_id):
+    goal = Goal.query.get_or_404(goal_id)
+    if goal.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('user_dashboard'))
+    try:
+        goal.achieved = not goal.achieved
+        db.session.commit()
+        status = 'completed ✅' if goal.achieved else 'reopened 🔄'
+        flash(f'Goal marked as {status}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating goal: {str(e)}', 'danger')
+    return redirect(url_for('user_dashboard'))
+
+
 # ------------------------- Admin Routes (unchanged) -------------------------
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
     if not current_user.is_admin:
-        flash('Admin access required.')
+        flash('Admin access required.', 'danger')
         return redirect(url_for('user_dashboard'))
 
     # ----- Basic counts -----
@@ -1000,7 +1336,7 @@ def admin_dashboard():
 @login_required
 def admin_users():
     if not current_user.is_admin:
-        flash('Admin access required.')
+        flash('Admin access required.', 'danger')
         return redirect(url_for('user_dashboard'))
     users = User.query.all()
     return render_template('admin/users.html', users=users)
@@ -1010,7 +1346,7 @@ def admin_users():
 @login_required
 def admin_user_detail(user_id):
     if not current_user.is_admin:
-        flash('Admin access required.')
+        flash('Admin access required.', 'danger')
         return redirect(url_for('user_dashboard'))
 
     user = User.query.get_or_404(user_id)

@@ -1,225 +1,47 @@
 {% extends "base.html" %}
 {% block extra_css %}
-<style>
- .fitness-wrapper {
- background: #f7fafc;
- border-radius: 20px;
- padding: 1rem;
- }
- .metric-card {
- border-radius: 16px;
- padding: 1rem 1.2rem;
- color: white;
- transition: transform 0.2s;
- height: 100%;
- }
- .metric-card:hover {
- transform: translateY(-3px);
- box-shadow: 0 8px 25px rgba(0,0,0,0.08);
- }
- .metric-card h5 {
- font-weight: 400;
- opacity: 0.9;
- font-size: 0.85rem;
- margin-bottom: 0.2rem;
- }
- .metric-card h2 {
- font-weight: 700;
- margin: 0.1rem 0;
- font-size: 1.8rem;
- }
- .metric-card small {
- opacity: 0.8;
- font-size: 0.75rem;
- }
- .card-custom {
- border: none;
- border-radius: 16px;
- box-shadow: 0 4px 12px rgba(0,0,0,0.05);
- overflow: hidden;
- }
- .card-header-custom {
- background: transparent;
- font-weight: 600;
- padding: 0.8rem 1.2rem;
- border-bottom: 1px solid #edf2f7;
- font-size: 0.95rem;
- }
- .stat-icon {
- font-size: 1.8rem;
- opacity: 0.7;
- }
- .form-control, .form-select {
- border-radius: 10px;
- border: 1.5px solid #e2e8f0;
- transition: border-color 0.2s;
- }
- .form-control:focus, .form-select:focus {
- border-color: #667eea;
- box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
- }
- .btn-primary-custom {
- background: linear-gradient(135deg, #4facfe, #00f2fe);
- border: none;
- border-radius: 50px;
- padding: 0.5rem 1.5rem;
- font-weight: 600;
- color: white;
- transition: all 0.2s;
- width: 100%;
- }
- .btn-primary-custom:hover {
- transform: scale(1.02);
- box-shadow: 0 8px 25px rgba(79,172,254,0.4);
- color: white;
- }
- .chart-container {
- background: white;
- border-radius: 14px;
- padding: 0.8rem;
- box-shadow: 0 4px 12px rgba(0,0,0,0.05);
- height: 100%;
- }
- .chart-container canvas {
- max-height: 180px;
- }
- .table-custom th {
- font-weight: 600;
- color: #4a5568;
- font-size: 0.8rem;
- text-transform: uppercase;
- letter-spacing: 0.3px;
- border-bottom: 2px solid #edf2f7;
- }
- .table-custom td {
- font-size: 0.85rem;
- vertical-align: middle;
- }
- .log-scroll {
- max-height: 300px;
- overflow-y: auto;
- }
- .log-scroll::-webkit-scrollbar {
- width: 4px;
- }
- .log-scroll::-webkit-scrollbar-thumb {
- background: #cbd5e0;
- border-radius: 10px;
- }
- .progress-goal {
- height: 12px;
- border-radius: 10px;
- background: #edf2f7;
- overflow: hidden;
- margin: 0.5rem 0;
- }
- .progress-goal .progress-fill {
- height: 100%;
- border-radius: 10px;
- background: linear-gradient(90deg, #43e97b, #38f9d7);
- transition: width 0.6s ease;
- }
- .btn-action {
- border: none;
- border-radius: 8px;
- padding: 0.28rem 0.55rem;
- font-size: 0.78rem;
- cursor: pointer;
- transition: all 0.18s;
- display: inline-flex;
- align-items: center;
- gap: 3px;
- }
- .btn-edit {
- background: linear-gradient(135deg, #667eea, #764ba2);
- color: white;
- }
- .btn-edit:hover {
- transform: scale(1.07);
- box-shadow: 0 4px 12px rgba(102,126,234,0.45);
- color: white;
- }
- .btn-delete {
- background: linear-gradient(135deg, #f5576c, #f093fb);
- color: white;
- }
- .btn-delete:hover {
- transform: scale(1.07);
- box-shadow: 0 4px 12px rgba(245,87,108,0.45);
- color: white;
- }
- .modal-header-custom {
- background: linear-gradient(135deg, #667eea, #764ba2);
- color: white;
- border-radius: 16px 16px 0 0;
- }
- .modal-content {
- border-radius: 16px;
- border: none;
- box-shadow: 0 20px 60px rgba(0,0,0,0.15);
- }
-</style>
 {% endblock %}
 
 {% block content %}
-<div class="fitness-wrapper">
+<div class="dt-dashboard-wrapper">
  <!-- Page Title -->
- <div class="d-flex justify-content-between align-items-center mb-3">
- <h3 class="fw-bold mb-0"><i class="fas fa-running text-danger me-2"></i>Fitness Activity</h3>
+ <div class="d-flex justify-content-between align-items-center mb-4">
+ <h3 class="fw-bold mb-0"><i class="fas fa-dumbbell me-2" style="color:var(--color-fitness);"></i>Fitness Activity</h3>
  <span class="badge bg-light text-dark">Last updated: {{ datetime.now().strftime('%d %b, %I:%M %p') }}</span>
  </div>
 
  <!-- ===== Summary Metrics ===== -->
  <div class="row g-3 mb-4">
  <div class="col-6 col-md-3">
- <div class="metric-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
- <div class="d-flex justify-content-between">
- <div>
- <h5>Total Activity</h5>
- <h2>{{ total_min }} min</h2>
- <small>All time</small>
- </div>
- <div class="stat-icon"><i class="fas fa-clock"></i></div>
+ <div class="dt-metric-card fade-in-up delay-1">
+ <div class="dt-metric-chip chip-fitness"><i class="fas fa-clock"></i></div>
+ <div class="dt-metric-label">Total Activity</div>
+ <div class="dt-metric-val"><span data-count-up="{{ total_min }}" data-count-duration="1200">0</span> <span style="font-size:1rem;font-weight:500;">min</span></div>
+ <div class="dt-metric-sub">All time</div>
  </div>
  </div>
- </div>
-
  <div class="col-6 col-md-3">
- <div class="metric-card" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
- <div class="d-flex justify-content-between">
- <div>
- <h5>Calories Burned</h5>
- <h2>{{ total_cal }}</h2>
- <small>Total kcal</small>
- </div>
- <div class="stat-icon"><i class="fas fa-fire"></i></div>
+ <div class="dt-metric-card fade-in-up delay-2">
+ <div class="dt-metric-chip chip-danger"><i class="fas fa-fire"></i></div>
+ <div class="dt-metric-label">Calories Burned</div>
+ <div class="dt-metric-val"><span data-count-up="{{ total_cal }}" data-count-duration="1200">0</span></div>
+ <div class="dt-metric-sub">Total kcal</div>
  </div>
  </div>
- </div>
-
  <div class="col-6 col-md-3">
- <div class="metric-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a202c;">
- <div class="d-flex justify-content-between">
- <div>
- <h5>Daily Average</h5>
- <h2>{{ avg_min_per_day }} min</h2>
- <small>Per day</small>
- </div>
- <div class="stat-icon"><i class="fas fa-chart-line" style="color: #2d3748;"></i></div>
+ <div class="dt-metric-card fade-in-up delay-3">
+ <div class="dt-metric-chip chip-success"><i class="fas fa-chart-line"></i></div>
+ <div class="dt-metric-label">Daily Average</div>
+ <div class="dt-metric-val"><span data-count-up="{{ avg_min_per_day }}" data-count-duration="1000">0</span> <span style="font-size:1rem;font-weight:500;">min</span></div>
+ <div class="dt-metric-sub">Per day</div>
  </div>
  </div>
- </div>
-
  <div class="col-6 col-md-3">
- <div class="metric-card" style="background: linear-gradient(135deg, #ed64a6, #d53f8c);">
- <div class="d-flex justify-content-between">
- <div>
- <h5>Streak</h5>
- <h2>{{ streak }} days</h2>
- <small>Consecutive</small>
- </div>
- <div class="stat-icon"><i class="fas fa-fire"></i></div>
- </div>
+ <div class="dt-metric-card fade-in-up delay-4">
+ <div class="dt-metric-chip chip-pink"><i class="fas fa-fire"></i></div>
+ <div class="dt-metric-label">Streak</div>
+ <div class="dt-metric-val"><span data-count-up="{{ streak }}" data-count-duration="800">0</span> <span style="font-size:1rem;font-weight:500;">days</span></div>
+ <div class="dt-metric-sub">Consecutive</div>
  </div>
  </div>
  </div>
@@ -229,8 +51,8 @@
  <div class="col-lg-4">
 
  <!-- Log Activity Form -->
- <div class="card card-custom mb-3">
- <div class="card-header-custom">
+ <div class="dt-glass-card mb-3">
+ <div class="card-header border-bottom-0 bg-transparent fw-bold">
  <i class="fas fa-plus-circle text-danger me-1"></i> Log Activity
  </div>
 
@@ -269,7 +91,7 @@
  placeholder="e.g., 250" required>
  </div>
 
- <button type="submit" class="btn btn-primary-custom">
+ <button type="submit" class="btn btn-primary rounded-pill px-4">
  <i class="fas fa-save me-1"></i> Log Activity
  </button>
 
@@ -278,8 +100,8 @@
  </div>
 
  <!-- Weekly Goal Progress -->
- <div class="card card-custom">
- <div class="card-header-custom">
+ <div class="dt-glass-card">
+ <div class="card-header border-bottom-0 bg-transparent fw-bold">
  <i class="fas fa-flag-checkered text-success me-1"></i> Weekly Goal
  </div>
 
@@ -313,18 +135,21 @@
  <!-- Chart Row -->
  <div class="row g-3">
  <div class="col-md-7">
- <div class="chart-container">
- <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">
+ <div class="dt-glass-card h-100">
+ <div class="p-3">
+ <h6 class="fw-bold mb-2" style="font-size: 0.85rem;">
  <i class="fas fa-calendar-day text-primary me-1"></i>
  Daily Activity (last 14 days)
  </h6>
  <canvas id="fitnessTrendChart" height="150"></canvas>
  </div>
  </div>
+ </div>
 
  <div class="col-md-5">
- <div class="chart-container">
- <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">
+ <div class="dt-glass-card h-100">
+ <div class="p-3">
+ <h6 class="fw-bold mb-2" style="font-size: 0.85rem;">
  <i class="fas fa-pie-chart text-warning me-1"></i>
  Activity Breakdown
  </h6>
@@ -332,11 +157,12 @@
  </div>
  </div>
  </div>
+ </div>
 
  <!-- Activity Log Table -->
  <div class="row g-3 mt-1">
  <div class="col-12">
- <div class="card card-custom">
+ <div class="dt-glass-card">
 
  <div class="card-header-custom d-flex justify-content-between align-items-center">
  <span>
@@ -455,7 +281,7 @@
   </div>
   <div class="modal-footer border-0">
   <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-  <button type="submit" class="btn btn-primary-custom px-4" style="width:auto;">
+  <button type="submit" class="btn btn-primary rounded-pill px-4 px-4" style="width:auto;">
   <i class="fas fa-save me-1"></i>Save Changes
   </button>
   </div>
@@ -468,6 +294,11 @@
 {% block scripts %}
 <!-- Fitness Trend Chart -->
 <script>
+function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function gridColor() { return isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'; }
+function tickColor() { return isDark() ? '#9ca3af' : '#6b7280'; }
+function chartBorderColor() { return isDark() ? '#1e2232' : '#ffffff'; }
+
 const ctxFit = document.getElementById('fitnessTrendChart').getContext('2d');
 
 new Chart(ctxFit, {
@@ -484,6 +315,7 @@ new Chart(ctxFit, {
  }]
  },
  options: {
+ type: 'bar',
  responsive: true,
  maintainAspectRatio: true,
  aspectRatio: 1.8,
@@ -496,12 +328,13 @@ new Chart(ctxFit, {
  y: {
  beginAtZero: true,
  grid: {
- color: '#e9ecef'
+ color: gridColor()
  },
  ticks: {
  font: {
  size: 8
- }
+ },
+ color: tickColor()
  }
  },
  x: {
@@ -511,7 +344,8 @@ new Chart(ctxFit, {
  ticks: {
  font: {
  size: 8
- }
+ },
+ color: tickColor()
  }
  }
  }

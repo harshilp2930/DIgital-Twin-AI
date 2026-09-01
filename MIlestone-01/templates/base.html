@@ -1,217 +1,425 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Twin AI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="LifeLens AI - Your intelligent life simulation and decision assistant. Track finances, study habits, fitness, and run AI-powered simulations."
+    />
+    <title>{% block title %}LifeLens AI{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome 6 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Fintech Theme -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/theme.css') }}"
+    />
+
     <style>
-        body {
-            background: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar-brand {
-            font-weight: bold;
-            color: #667eea !important;
-        }
-        .nav-link {
-            color: #555 !important;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        .nav-link:hover {
-            color: #667eea !important;
-        }
-        .dropdown-item:active {
-            background: #667eea;
-            color: white;
-        }
-        .btn-primary {
-            background: #667eea;
-            border: none;
-        }
-        .btn-primary:hover {
-            background: #5a6fd6;
-        }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #667eea;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .admin-badge {
-            font-size: 0.6rem;
-            background: #ed64a6;
-            color: white;
-            padding: 0.15rem 0.5rem;
-            border-radius: 30px;
-            margin-left: 0.3rem;
-            vertical-align: middle;
-        }
-        /* Optional: active link highlight */
-        .nav-link.active-link {
-            color: #667eea !important;
-            font-weight: 600;
-        }
+      body {
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      body.page-ready {
+        opacity: 1;
+      }
+
+      .dt-main-grid {
+        opacity: 0;
+        transform: translateY(12px);
+        transition:
+          opacity 0.45s ease,
+          transform 0.45s ease;
+      }
+
+      body.page-ready .dt-main-grid {
+        opacity: 1;
+        transform: translateY(0);
+      }
     </style>
+
     {% block extra_css %}{% endblock %}
-</head>
-<body>
+  </head>
+  <body>
+    <!-- Immediately set theme to avoid FOUC -->
+    <script>
+      (function () {
+        var saved = localStorage.getItem("dt-ai-theme");
+        document.documentElement.setAttribute("data-theme", saved || "dark");
+      })();
+    </script>
 
     <!-- ===== NAVBAR ===== -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-brain"></i> Digital Twin AI
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center">
+    <nav class="dt-navbar navbar navbar-expand-lg" id="dtNavbar">
+      <div class="container-fluid px-4">
+        <!-- Brand -->
+        <a class="dt-navbar-brand" href="{{ url_for('index') }}">
+          <span class="dt-brand-icon"><i class="fas fa-brain"></i></span>
+          <span class="dt-brand-text">LifeLens AI</span>
+        </a>
 
-                    {% if current_user.is_authenticated %}
-
-                        <!-- ===== ADMIN DROPDOWN (only visible to admins) ===== -->
-                        {% if current_user.is_admin %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user-cog"></i> Admin
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
-                                        <i class="fas fa-chart-pie me-2"></i>Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">
-                                        <i class="fas fa-users me-2"></i>Manage Users
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('user_dashboard') }}">
-                                        <i class="fas fa-user me-2"></i>My Profile
-                                    </a></li>
-                                </ul>
-                            </li>
-                        {% endif %}
-
-                        <!-- ===== USER FEATURES (visible to EVERYONE – admins AND normal users) ===== -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user_dashboard') }}">
-                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user_financial') }}">
-                                <i class="fas fa-coins me-1"></i>Financial
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user_study') }}">
-                                <i class="fas fa-book-open me-1"></i>Study
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user_fitness') }}">
-                                <i class="fas fa-running me-1"></i>Fitness
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user_simulation') }}">
-                                <i class="fas fa-robot me-1"></i>Simulation
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user_assistant') }}">
-                                <i class="fas fa-comment-dots me-1"></i>Assistant
-                            </a>
-                        </li>
-
-                        <!-- ===== USER DROPDOWN (avatar + logout) ===== -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <span class="user-avatar">{{ current_user.username[0]|upper }}</span>
-                                <span class="ms-1">{{ current_user.username }}</span>
-                                {% if current_user.is_admin %}
-                                    <span class="admin-badge">Admin</span>
-                                {% endif %}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ url_for('user_dashboard') }}">
-                                    <i class="fas fa-user me-2"></i>Profile
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('user_simulation') }}">
-                                    <i class="fas fa-chart-line me-2"></i>Simulate
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                </a></li>
-                            </ul>
-                        </li>
-
-                    {% else %}
-
-                        <!-- ===== NOT LOGGED IN ===== -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Login
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('register') }}">
-                                <i class="fas fa-user-plus me-1"></i>Register
-                            </a>
-                        </li>
-
-                    {% endif %}
-
-                </ul>
-            </div>
+        <!-- Mobile Toggler -->
+        <div class="d-flex align-items-center gap-2 d-lg-none">
+          <button
+            id="themeToggleBtn"
+            class="dt-theme-btn"
+            title="Toggle theme"
+            aria-label="Toggle theme"
+          >
+            <i class="fas fa-sun icon-sun"></i>
+            <i class="fas fa-moon icon-moon"></i>
+          </button>
+          <button
+            class="navbar-toggler dt-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <i class="fas fa-bars"></i>
+          </button>
         </div>
+
+        <!-- Nav Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul
+            class="navbar-nav mx-auto align-items-lg-center gap-lg-0"
+            id="dt-nav-links"
+          >
+            {% if current_user.is_authenticated %}
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}"
+                href="{{ url_for('user_dashboard') }}"
+                id="nl-dashboard"
+              >
+                <i class="fas fa-gauge-high dt-nav-icon"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_financial' %}active active-finance{% endif %}"
+                href="{{ url_for('user_financial') }}"
+                id="nl-finance"
+              >
+                <i class="fas fa-coins dt-nav-icon"></i>
+                <span>Finance</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_study' %}active active-study{% endif %}"
+                href="{{ url_for('user_study') }}"
+                id="nl-study"
+              >
+                <i class="fas fa-book-open dt-nav-icon"></i>
+                <span>Study</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_fitness' %}active active-fitness{% endif %}"
+                href="{{ url_for('user_fitness') }}"
+                id="nl-fitness"
+              >
+                <i class="fas fa-dumbbell dt-nav-icon"></i>
+                <span>Fitness</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_simulation' %}active{% endif %}"
+                href="{{ url_for('user_simulation') }}"
+                id="nl-sim"
+              >
+                <i class="fas fa-robot dt-nav-icon"></i>
+                <span>Simulate</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'user_assistant' %}active active-ai{% endif %}"
+                href="{{ url_for('user_assistant') }}"
+                id="nl-ai"
+              >
+                <i class="fas fa-comment-dots dt-nav-icon"></i>
+                <span>AI Chat</span>
+              </a>
+            </li>
+
+            {% if current_user.is_admin %}
+            <li class="nav-item dropdown">
+              <a
+                class="dt-nav-link {% if request.endpoint and request.endpoint.startswith('admin') %}active active-admin{% endif %} dropdown-toggle"
+                href="#"
+                id="adminDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="fas fa-user-shield dt-nav-icon"></i>
+                <span>Admin</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end dt-dropdown">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin_dashboard') }}"
+                  >
+                    <i
+                      class="fas fa-chart-pie me-2"
+                      style="color: var(--color-ai)"
+                    ></i
+                    >Dashboard</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('admin_users') }}">
+                    <i
+                      class="fas fa-users me-2"
+                      style="color: var(--color-finance)"
+                    ></i
+                    >Manage Users</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('user_dashboard') }}"
+                  >
+                    <i class="fas fa-user me-2 text-muted"></i>My Profile</a
+                  >
+                </li>
+              </ul>
+            </li>
+            {% endif %} {% else %}
+
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'index' %}active{% endif %}"
+                href="{{ url_for('index') }}"
+              >
+                <i class="fas fa-house dt-nav-icon"></i><span>Home</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="dt-nav-link {% if request.endpoint == 'login' %}active{% endif %}"
+                href="{{ url_for('login') }}"
+              >
+                <i class="fas fa-right-to-bracket dt-nav-icon"></i
+                ><span>Login</span>
+              </a>
+            </li>
+
+            {% endif %}
+          </ul>
+
+          <!-- Right side controls -->
+          <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+            <!-- Theme Toggle (desktop) -->
+            <button
+              id="themeToggleBtn"
+              class="dt-theme-btn d-none d-lg-flex"
+              title="Toggle theme"
+              aria-label="Toggle theme"
+            >
+              <i class="fas fa-sun icon-sun"></i>
+              <i class="fas fa-moon icon-moon"></i>
+            </button>
+
+            {% if current_user.is_authenticated %}
+            <!-- User Dropdown -->
+            <div class="dropdown">
+              <button
+                class="dt-user-pill dropdown-toggle"
+                type="button"
+                id="userDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="dt-user-avatar"
+                  >{{ current_user.username[0]|upper }}</span
+                >
+                <span class="dt-user-name d-none d-xl-inline"
+                  >{{ current_user.username }}</span
+                >
+                {% if current_user.is_admin %}
+                <span class="dt-admin-badge">Admin</span>
+                {% endif %}
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end dt-dropdown">
+                <li>
+                  <div
+                    class="px-3 py-2 border-bottom"
+                    style="border-color: var(--border-color) !important"
+                  >
+                    <div
+                      style="
+                        font-weight: 700;
+                        font-size: 0.85rem;
+                        color: var(--text-primary);
+                      "
+                    >
+                      {{ current_user.username }}
+                    </div>
+                    <div
+                      style="font-size: 0.72rem; color: var(--text-secondary)"
+                    >
+                      {{ current_user.email }}
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('user_dashboard') }}"
+                  >
+                    <i
+                      class="fas fa-user me-2"
+                      style="color: var(--brand-primary)"
+                    ></i
+                    >My Profile</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('user_simulation') }}"
+                  >
+                    <i
+                      class="fas fa-chart-line me-2"
+                      style="color: var(--color-finance)"
+                    ></i
+                    >Simulate</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a
+                    class="dropdown-item text-danger"
+                    href="{{ url_for('logout') }}"
+                  >
+                    <i class="fas fa-right-from-bracket me-2"></i>Logout</a
+                  >
+                </li>
+              </ul>
+            </div>
+
+            {% else %}
+            <a href="{{ url_for('register') }}" class="dt-cta-btn">
+              <i class="fas fa-user-plus me-1"></i>Get Started
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
     </nav>
 
     <!-- ===== FLASH MESSAGES ===== -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="container mt-3">
-                {% for msg in messages %}
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                        {{ msg }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="container-fluid px-4 mt-3">
+      {% for category, msg in messages %}
+      <div
+        class="alert alert-{{ category if category in ['success','danger','warning','info'] else 'info' }} alert-dismissible fade show fade-in-up"
+        role="alert"
+      >
+        {% if category == 'success' %}<i class="fas fa-circle-check me-2"></i>
+        {% elif category == 'danger' %}<i
+          class="fas fa-circle-exclamation me-2"
+        ></i>
+        {% elif category == 'warning' %}<i
+          class="fas fa-triangle-exclamation me-2"
+        ></i>
+        {% else %}<i class="fas fa-circle-info me-2"></i>{% endif %} {{ msg }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
 
-    <!-- ===== PAGE CONTENT ===== -->
-    {% block content %}{% endblock %}
+    <!-- ===== PAGE CONTENT (grid layout) ===== -->
+    <main class="dt-main-grid">{% block content %}{% endblock %}</main>
 
     <!-- ===== FOOTER ===== -->
-    <footer class="mt-5 py-4 bg-light border-top">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start">
-                    <span class="text-muted small">© 2026 Digital Twin AI – All rights reserved.</span>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <a href="#" class="text-muted text-decoration-none me-3 small">Privacy</a>
-                    <a href="#" class="text-muted text-decoration-none me-3 small">Terms</a>
-                    <a href="#" class="text-muted text-decoration-none small">Contact</a>
-                </div>
-            </div>
+    <footer class="dt-footer">
+      <div class="container-fluid px-4">
+        <div class="row align-items-center g-2">
+          <div class="col-md-4 text-center text-md-start">
+            <span class="dt-footer-brand"
+              ><i class="fas fa-brain me-1"></i>LifeLens AI</span
+            >
+            <span class="ms-2 text-secondary small"
+              >- Simulate your future. Live smarter.</span
+            >
+          </div>
+          <div class="col-md-4 text-center">
+            <span class="text-secondary small"
+              >© 2026 LifeLens AI. All rights reserved.</span
+            >
+          </div>
+          <div class="col-md-4 text-center text-md-end">
+            <a href="{{ url_for('privacy') }}" class="dt-footer-link me-3"
+              >Privacy</a
+            >
+            <a href="{{ url_for('terms') }}" class="dt-footer-link me-3"
+              >Terms</a
+            >
+            <a href="{{ url_for('contact') }}" class="dt-footer-link me-3"
+              >Contact</a
+            >
+            <a href="{{ url_for('about') }}" class="dt-footer-link">About</a>
+          </div>
         </div>
+      </div>
     </footer>
 
     <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        requestAnimationFrame(function () {
+          document.body.classList.add("page-ready");
+        });
+      });
+    </script>
+
     {% block scripts %}{% endblock %}
-</body>
+  </body>
 </html>
